@@ -1,0 +1,28 @@
+# Use $(dot -Tsvg hmm.viz -o hmm.svg) to regenerate
+digraph {
+        graph [nodesep="1", ranksep="0.5"];
+        node [shape = circle]
+             {rank = same;
+                   U0
+                   U1
+                   U2
+                   UT
+              }
+        node [style=filled, fontcolor="#eeeeee", color="#111111"];
+             {rank = same;
+                   Q0
+                   Q1
+                   Q2
+                   QT
+              }
+        Q0 -> U0;
+        Q1 -> U1;
+        Q2 -> U2;
+        QT -> UT;
+
+        Q0 -> Q1;
+        Q1 -> Q2;
+
+        edge [style=dotted]
+        Q2 -> QT;
+}
