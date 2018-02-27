@@ -1,0 +1,26 @@
+********************************************************************************
+*                                                                              *
+*                                README                                        *
+*                                                                              *
+********************************************************************************
+
+How to run the code
+-------------------
+
+Our 3 source code file are included in this archive, we all implemented
+the algorithms in python using jupyter notebooks.
+
+Content of the archive
+----------------------
+
+src/
+ - Contains our source code
+report/
+ - Contains the pdf and the tex file for the report
+
+Data
+----
+
+The data have been removed from this archive, because it was
+too large to be sent by e-mail. In order to run the notebooks
+you will need to add the data in the src/ folder.
