@@ -1,0 +1,511 @@
+\documentclass[a4paper, 11pt]{article}
+
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{bbm}
+\usepackage{framed}
+\usepackage{amsfonts}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{listings}
+\usepackage{tabularx}
+\usepackage{color}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{dirtytalk}
+\usepackage{titlesec}
+\usepackage{amssymb}
+\usepackage{float}
+\usepackage{bm}
+\usepackage{algorithm}
+\usepackage{titling}
+\usepackage[noend]{algpseudocode}
+\usepackage[toc,page]{appendix}
+\usepackage[style=authoryear-icomp, maxbibnames=9, maxcitenames=2, backend=biber]{biblatex}
+\setlength\bibitemsep{1.5\itemsep} % space between ref in bibliography
+
+\addbibresource{references.bib}
+\graphicspath{{imgs/}}
+
+\titlespacing*{\section}
+{0pt}{0.3em}{0.3em}
+\titlespacing*{\subsection}
+{0pt}{0.2em}{0.2em}
+\titlespacing*{\subsubsection}
+{0pt}{0.1em}{0.1em}
+
+\setlength{\droptitle}{-4em}
+
+\definecolor{morange}{RGB}{237,106,90}
+\definecolor{mgreen}{RGB}{63,127,95}
+\definecolor{mpurple}{RGB}{127,0,85}
+
+\lstset{
+  basicstyle=\small\ttfamily, % Global Code Style
+  captionpos=b, % Position of the Caption (t for top, b for bottom)
+  extendedchars=true, % Allows 256 instead of 128 ASCII characters
+  tabsize=2, % number of spaces indented when discovering a tab
+  columns=fixed, % make all characters equal width
+  keepspaces=true, % does not ignore spaces to fit width, convert tabs to spaces
+  showstringspaces=false, % lets spaces in strings appear as real spaces
+  breaklines=true, % wrap lines if they don't fit
+  frame=trbl, % draw a frame at the top, right, left and bottom of the listing
+  frameround=tttt, % make the frame round at all four corners
+  framesep=4pt, % quarter circle size of the round corners
+  numbers=left, % show line numbers at the left
+  numberstyle=\tiny\ttfamily, % style of the line numbers
+  commentstyle=\color{mgreen}, % style of comments
+  keywordstyle=\color{mpurple}, % style of keywords
+  stringstyle=\color{morange}, % style of strings
+}
+
+% TAILLE DES PAGES (A4 serré)
+
+\setlength{\intextsep}{1em}
+\setlength{\parindent}{0em}
+\setlength{\parskip}{1em}
+
+\setlength{\textwidth}{17cm}
+\setlength{\textheight}{24cm}
+\setlength{\oddsidemargin}{-.7cm}
+\setlength{\evensidemargin}{-.7cm}
+\setlength{\topmargin}{-.5in}
+
+
+\pagestyle{fancy}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0.6pt}% default is 0pt
+\lhead{}
+\rhead{}
+\lfoot{Page \thepage\ of \pageref{LastPage}}
+\rfoot{Rémi Lespinet, Victor Busa}
+\cfoot{}
+\cfoot{}
+
+
+\newcounter{cquestion}
+\renewcommand{\thecquestion}{\arabic{cquestion}}
+\newenvironment{question}
+{\par \vspace{0.5em} \noindent \stepcounter{cquestion} \hspace{-1em}
+ $\bullet$ \underline{Q\thecquestion :}}
+{}
+
+\newenvironment{note}
+{\begin{framed} \textbf{Note :}}
+{\end{framed}}
+
+
+% Commandes de mise en page
+\newcommand{\file}[1]{\lstinline{#1}}
+\newcommand{\name}[1]{\emph{#1}}
+\newcommand{\itemi}{\item[$\bullet$]}
+
+\newcommand{\norm}[1]{\|{#1}\|}
+\newcommand{\pcond}[2]{p(#1 \hspace{-.2em}\mid\hspace{-.2em} #2)}
+
+% Commandes color
+\newcommand{\colgood}[1]{\color{ForestGreen} #1}
+\newcommand{\colbad}[1]{\color{BrickRed} #1}
+
+
+\pagenumbering{arabic}
+
+\title{\textsc{Probabilistic Graphical Models - MVA 2017/2018 \\ \emph{Review on Conditional Random Fields}} }
+\author{Victor Busa, Rémi Lespinet}
+\date{}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{fancy}
+
+\vspace{-4em}
+\section{Introduction}
+
+In a setting where we consider distributions over a set of random
+variables that can be split into a set of observed random variables
+$X$ (the entities) and a set of latent random variables $Y$ (the
+features), we have seen that traditional graphical models (directed
+and undirected) represent the joint probability distribution $p(x, y)$
+of the variables. This involves choosing a model that represents well
+the dependencies between the observed data. This dependency is
+sometimes complex, hence difficult to model, and critical for the
+performance of the model.
+
+In a case where our primary goal is to solve the classification
+problem (e.g we want to predict classes $y_1, \dots y_N$ given an
+observation $x_1, \dots x_M$), we can avoid modeling these complex
+dependences between observed random variables and directly model
+$\pcond{y}{x}$. This is the solution proposed by Conditional Random
+Fields (CRF).
+
+Before the use of Neural network, CRFs were a
+state-of-the-art technique on lots of natural language processing
+tasks such as part-of-speech tagging \autocite{lafferty2001}, shallow
+parsing \autocite{sha2003}, named entity recognition
+\autocite{mcdonald2005}. They have also been applied to object
+recognition \autocite{quattoni2005}, image labeling \autocite{he2004}
+and gene prediction \autocite{decaprio2007}.
+
+In this review we will briefly provide the intuition behind CRFs by
+explaining differences between generative and discriminative models through
+the examples of logistic regression and naive bayes models, we then
+focus on linear-chain conditional random filed (LRCRF), where we
+discuss the techniques used for parameter estimation and inference
+tasks. We then briefly present the general setting for CRFs.
+
+\section{Generative vs Discriminative models}
+
+As we have seen, a difference between Naive Bayes and Logistic
+regression, is that the former is generative e.g. it models $p(y, x)$,
+whereas the later is discriminative e.g. it models $\pcond{y}{x}$.
+
+As briefly introduced, by using a discriminative model, we can remain
+agnostic about the form of $p(x)$, which is often difficult to model
+and not necessary for classification. This explains why the logistic
+regression outperforms the Naive Bayes model on average in a range of
+tasks.
+
+In fact we see easily that interpreting the Logistic regression
+generatively leads to Naive Bayes, and conversely, interpreting the
+conditional probability of the Naive Bayes model leads to Logistic
+regression. We say that these two models form a
+\say{generative-discriminative} pair.
+
+In this regard, one question arise as to what the discriminative
+counter part for HMMs are. As we will see in the next sections,
+linear-chain CRFs provide an answer to this question.
+
+
+% By using a discriminative model, we can remain agnostic about the
+% form of $p(x)$, which is often difficult to model, and is In \cite{andrew2002}
+% The objective
+% of the CRFs is to represent discriminative
+
+% In the following sections, we will see discriminative models that
+% capture the data
+% We have seen in the lectures that HMMs are a generative model that model
+% are a generalization of the
+% Naive Bayes model that captures dependencies between sequential data.
+% In this regard, one can a
+
+% A question arises as to wether  to ask is then to derive a discriminative model
+% that
+
+% In the following section, we will derive a discriminative
+% model from the HMM model
+
+
+% a generative model, a natural question to ask is
+
+% TODO
+
+\section{Linear-chain conditional random fields}
+
+In the lectures, we have seen that a Hidden Markov model (HMM) can be
+thought as a generalization of a Naïve Bayes model that captures
+dependencies between sequential data. We have also discussed the
+advantages of discriminative models for classification
+tasks. In this section, we present the definition of
+\emph{linear-chains} CRFs that combine both these characteristics, and we
+see that \emph{linear-chains} CRFs can be seen as an extension of HMMs.
+% will derive an expression from the expression of the HMM.
+
+A linear-chain conditional random field is a distribution that takes
+the form:
+\begin{equation}
+  \label{eq:lccrf}
+  \pcond{x}{y} = \dfrac{1}{Z(\eta)} \exp{\left(
+      \sum_{t=1}^T \sum_{k=1}^K \eta_k \phi_k(y_{t-1}, y_t, x_t)
+    \right)}
+\end{equation}
+
+Let's verify that linear-chain CRF generalizes the HMM. The paper
+exposes the case where emission probabilities are discrete, but
+it actually works for the more general case where emission probabilities are in
+exponential family form.
+% we can
+% also verify that this is true for the more general case of a HMM with
+% emission probabilities in exponential family form.
+% generalize to a case where the emission probabilities are written in
+% exponential familly form
+Let us consider the following emission probability:
+\begin{equation}
+  \pcond{x_t}{y_t = i} = \dfrac{1}{Z(\mu)} \exp{\left(\mu_i^T\phi_i(x_t)\right)}
+\end{equation}
+We can write
+\begin{equation}
+  p(x, y) = \dfrac{1}{Z(\eta)} \exp{\left(
+      \sum_{t=1}^T \sum_{i \in S} \sum_{j \in S} \lambda_{i,j} 1_{\{y_t = i\}}1_{\{y_{t-1} = j\}}
+      + \sum_{t=1}^T \sum_{i \in \mathcal{S}} 1_{\{y_t = i\}} \mu_i^T \phi_i(x_t)
+    \right)}
+\end{equation}
+% In the case where emission probabilities are discrete, a HMM can be
+% written in exponential form as
+% \begin{displaymath}
+%   p(x, z) = \dfrac{1}{Z(\eta)} \exp{\left(
+%       \sum_{t=1}^T \sum_{i \in S} \sum_{j \in S} \lambda_{i,j} 1_{\{z_t = i\}}1_{\{z_{t-1} = j\}} + \sum_{t=1}^T \sum_{\{i \in S\}} \sum_{\{o \in O\}} \mu_{i,o} 1_{\{z_t = i\}}1_{\{x_{t} = o\}}
+%     \right)}
+% \end{displaymath}
+% If we concatenate all variables
+% $\eta = \{\{\lambda_{i,j}\}, \{\mu_{i,o}\}\}$, we rewrite the previous
+% expression in the form
+We see that it takes the following form:
+\begin{displaymath}
+  p(x, y) = \dfrac{1}{Z(\eta)} \exp{\left(
+      \sum_{t=1}^T \sum_{k=1}^K \eta_k \phi_k(y_{t-1}, y_t, x_t)
+    \right)}
+\end{displaymath}
+Hence
+\begin{equation}
+  \pcond{x}{y} = \dfrac{p(x, y)}{\sum_{x \in \mathcal{S}} p(x, y)} =
+  \dfrac{1}{Z(x, \eta)} \exp{\left(
+      \sum_{t=1}^T \sum_{k=1}^K \eta_k \phi_k(y_{t-1}, y_t, x_t)
+    \right)}
+\end{equation}
+
+
+\subsection{Parameters estimations}
+
+In this section we study how to estimate the parameters
+$\theta = \{\lambda_k\}$ of a \emph{linear-chain} CRF. Given a
+i.i.d. training data $\mathcal{D} = \{x^{(i)}, y^{(i)}\}_{i=1}^N$,
+where $x^{(i)} = \{x_1^{(i)}, \hdots, x_T^{(i)}\}$ is a sequence of
+inputs and each $y^{(i)} = \{y_1^{(i)}, \hdots, y_T^{(i)}\}$ is a
+sequence of the desired predictions.  Since CRFs model the conditional
+log-likelihood, we are interested in the vector $\theta$ that
+maximizes the conditional log-likelihood. e.g that maximizes
+\begin{equation}
+    \ell(\theta) = \sum\limits_{i=1}^N \log \; \pcond{y^{(i)}}{x^{(i)}}
+\end{equation}
+replacing the log probability by its expression \eqref{eq:lccrf}, we seek to maximize:
+\begin{equation*}
+  \ell(\lambda) = \underbrace{\sum\limits_{i=1}^N \sum\limits_{t=1}^T \sum\limits_{k=1}^K \lambda_k f_k(y_t^{(i)}, y_{t-1}^{(i)}, x_t^{(i)})}_{\mathcal{A}}
+  - \underbrace{\sum\limits_{i=1}^N \log\left(\underbrace{\sum\limits_{y \in \mathcal{Y}} \exp\left(\sum\limits_{t=1}^T \sum\limits_{k=1}^K \lambda_k f_k(y_t^{(i)}, {y}_{t-1}^{(i)},  x_t^{(i)})\right)}_{\mathcal{Y}_{\lambda}(x)}\right)}_{\mathcal{B}}
+  - \underbrace{\sum\limits_{k=1}^K \dfrac{\lambda_k^2}{2 \sigma^2}}_{\mathcal{C}}
+\end{equation*}
+To avoid overfitting we penalized the log-likelihood with the
+regularization term denoted by $\mathcal{C}$ (See
+\autocite{chen2000}).
+The log-likelihood function is concave (the log-sum exp function is
+convex). The regularized term being strictly concave, the regularized
+version of the log likelihood is strictly concave, and we can minimize
+using standard gradient ascent. Computing the partial derivatives of
+$\ell(\theta)$ w.r.t to the parameters $\lambda_p$ leads to
+\begin{equation}
+  \frac{\partial \ell}{\partial \lambda_p}(\lambda) =
+  \sum\limits_{i=1}^N \sum\limits_{t=1}^T f_p(y_t^{(i)}, {y}_{t-1}^{(i)},  x_t^{(i)}) +
+  \sum\limits_{i=1}^N \sum\limits_{y \in \mathcal{Y}} p_{\lambda}(y|x) \sum\limits_{t=1}^T f_p(y_t^{(i)}, {y}_{t-1}^{(i)},  x_t^{(i)}) -
+  \frac{\lambda_p}{\sigma^2}
+\end{equation}
+We see that we need the marginal probabilities $p_\lambda(y | x)$ in
+order to compute the gradient, which is the purpose of the next
+section.
+
+\subsection{Inference}
+
+As for HMMs, the inference problem on Linear-Chain CRFs can be solved
+exactly using dynamic programming. In this section, we use a
+generalization of the forward-backward algorithm \footnote{used and
+  implemented in homework 3} to compute the marginal probabilities. We
+also discuss the generalization of the Viterbi algorithm that can be
+used to compute the most probable sequence $y_1 \dots y_N$.
+% In this part we extend the forward-backward algorithm\footnote{used
+%   and implemented in homework 3} to the case of linear-chain
+%   conditional random fields. Indeed
+Deriving the expression of \eqref{eq:lccrf},
+% We've already seen \eqref{linchaineq} that any
+linear-conditional random fields can be written as:
+\begin{equation}
+  p_{\lambda}(y|x)
+  = \dfrac{1}{Z_{\lambda}(x)} \prod\limits_{t=1}^T
+  \exp\left(
+    \sum\limits_{k=1}^K \lambda_k f_k(y_t, y_{t-1}, x_t)
+  \right)
+\triangleq \dfrac{1}{Z_{\lambda}(x)} \prod\limits_{t=1}^T \Psi_t(y_t, y_{t-1}, x_t)
+\end{equation}
+% \begin{equation}
+%   p_{\lambda}(y|x)
+%   = \dfrac{1}{Z_{\lambda}(x)} \prod\limits_{t=1}^T
+%   \underbrace{\exp\left(
+%     \sum\limits_{k=1}^K \lambda_k f_k(y_t, y_{t-1}, x_t)
+%   \right)}_{\Psi_t(y_t, y_{t-1}, x_t)}
+% % \triangleq \dfrac{1}{Z_{\lambda}(x)} \prod\limits_{t=1}^T \Psi_t(y_t, y_{t-1}, x_t)
+% \end{equation}
+% As we will see in the following formulas, the exact inference on
+% linear-chain CRFs is solved exactly the same way as for
+As for the HMMs we can take advantage of the structure of the
+linear-chain CRF and save an exponential number of computations by
+writing
+\begin{equation}
+  \label{eq:sum-ordering}
+  p(x) = Z_{\lambda}(x) = \sum\limits_{y_T} \sum\limits_{y_{T-1}} \Psi_T(y_T, y_{T-1}, x_T)
+                   \; \hdots \overbrace{\sum\limits_{y_{1}} \Psi_{2}(y_{2}, y_{1}, x_{2}) \underbrace{\sum\limits_{y_{0}} \Psi_{1}(y_{1}, y_{0}, x_{1})}_{\alpha_1(y_1)}}^{\alpha_2(y_2)} = \sum_{y_T} \alpha_T(y_T)
+\end{equation}
+The backwards recursion is done exactly the same way by stacking the
+sums in the reverse order in \eqref{eq:sum-ordering}. This gives the
+following formulas.
+\begin{equation}
+  \label{eq:reccurence}
+  \left\{
+    \begin{array}{l}
+      \alpha_t(j) \triangleq p(x_1, \dots, x_t) = \sum_{i \in \mathcal{S}} \Psi_t(j, i, x_t) \alpha_{t - 1}(i) \\
+      \beta_t(j) \triangleq p(x_{t+1}, \dots, x_T) = \sum_{j \in \mathcal{S}} \Psi_{t+1}(j, i, x_{t+1}) \beta_{t + 1}(j) \\
+    \end{array}
+  \right.
+\end{equation}
+These formulas are identical to the formula for HMMs seen in the
+course, the difference between the two is captured in the definition
+of $\Psi$.
+
+\begin{note}
+  We can easily derive the Viterbi algorithm for the linear-chain CRFs
+  by replacing sum with $\max$ in the recurence formulas. The
+  algorithm then computes the most probable assignment
+  $y^* = \arg \max_{y} p(y|x)$
+\end{note}
+
+\section{General CRFs}
+
+General CRFs are easily defined, we say that $\pcond{y}{x}$ is a
+conditional random field if it factorizes according to a factor graph
+G. If the factors of G is in the exponential family form, we can write
+\begin{equation}
+  \pcond{y}{x} = \dfrac{1}{Z(x)} \prod_{\Psi_A \in G} \exp{
+    \left(
+      \lambda_A^T f_A(x_A, y_A)
+    \right)}
+\end{equation}
+We see that we can recover the general formulation of a CRF using the
+undirected graphical model :
+\begin{align}
+\begin{split}
+    p(y|x) &= \dfrac{p(x,y)}{p(x)}
+    = \dfrac{p(x,y)}{\sum_{y'} p(y', x)}
+    = \dfrac{\dfrac{1}{Z}\prod_{A}\Psi_A(x_A, y_A)}{\dfrac{1}{Z} \sum_{y'} \prod_{A} \Psi_A(x_A, y_A')}
+    = \dfrac{1}{Z(x)}\prod\limits_{A} \Psi_A(x_A, y_A)
+\end{split}
+\end{align}
+
+In practice parameters are often tied\footnote{For example in
+  homework 3 we used a fixed transition matrix}. So we can
+partition the factors of a graph $G$ into
+$\mathcal{C} = \{C_1, \hdots, C_P\}$, where each $C_p$ is a (clique
+template) set of factors which has a corresponding set of sufficient
+statistics $f_{pk}(x_p, y_p)$ and $\theta_p$. Using this notations,
+CRF can be formulated as:
+\begin{equation}
+    p(y|x) = \dfrac{1}{Z(x)}\prod\limits_{C_p \in \mathcal{C}} \prod\limits_{\Psi_c \in C_p} \Psi_c(x_c, y_c; \theta_p) \triangleq \dfrac{1}{Z(x)} \prod\limits_{C_p \in \mathcal{C}} \prod\limits_{\Psi_c \in C_p}
+    \exp\left(\sum\limits_{k=1}^{K(p)} \lambda_{pk} \underbrace{f_{pk}(x_c, y_c)}_{\text{sufficient statistics}}\right)
+    \label{eqgenchain}
+\end{equation}
+
+In a CRF we are not tied to sequential transition as we can add a factor (that models the direct dependencies between nodes) between any 2 nodes in the graph. Intuitively, the bigger the factors $f_{pk}$ is, the more likely seeing $y_c$ associated with the observation $x_c$ is going to happen in the model.
+
+
+\subsection{Inexact inference: general CRFs}
+Exact inference algorithms exist in the case of general CRFs and are
+based on the junction tree algorithm that we've briefly discussed in
+class. Indeed, the idea is to eliminate cycles by constructing a
+tree. This is done by clustering potential functions over each
+cliques. We can then use the Junction Tree algorithm to do exact
+inference on any kind of model. For complex models however, the join
+potential over a clique grows exponentially with the number of
+features, which makes the problem $\mathcal{N}\mathcal{P}$-hard in the
+worst case.
+  % Hence, in the worst case, the Junction Tree Algorithm performs
+  % poorly.
+%   For this reason, most of the literature focus on inexact
+%   inference algorithms. The most popular algorithms used for inexact
+%   inference are:
+% \begin{itemize}
+%     \item Markov Chain Monte Carlo
+%     \item Sum-product algorithm\footnote{known as belief propagation}
+% \end{itemize
+
+% These algorithms were studied in class so we won't detail their implementations.
+
+When the exact inference is intractable, one can rely on inexact
+approaches such as Markov Chain Monte Carlo\footnote{for example Gibbs
+  sampling}, or even the sum-product algorithm : when the graph is not
+a tree, we can iterate, updating all messages at each iteration. This
+method, called loopy belief propagation is not guaranteed to give a
+good approximation of the marginal, and not even to converge, but
+often give good results in practice.
+
+% the computed marginal are often good approximations
+
+
+% problem is too complex,
+% For this reason, algorithms solving inexact inference problem have emerged
+
+\section{Conclusion}
+
+% We have seen that CRFs is a generalization of the logistic regression
+% to arbitrary graphical structures.
+
+% General CRFs appears to be a to deal with discriminative
+
+% CRFs provides a good representation of conditional probabilities
+
+% CRFs brings a solution to deal with
+
+As we have seen, CRFs allow to model conditional probabilities using a
+graphical structure. For classification task, this provides a better
+representation, because it avoids modeling complex dependencies
+between the features. For this reason, CRFs have been successfully
+applied in a large variety of fields including text processing and
+computer vision.  In practice, inference in CRF is
+$\mathcal{N}\mathcal{P}$ hard in general, which is why a lot of
+the studies focus on a subset of CRFs, in which inference is easier.
+In particular, we have presented
+% the studies focus on finding a simpler
+% subset of CRFs in which inference inference and parameter estimation
+% is easier. In particular, we have seen that
+linear-chain CRFs, which are a natural choice for modeling sequential
+data. We have seen their link with HMMs and how we can derive
+algorithms to solve efficiently the inference problem and the
+parameter estimation problem.\\
+For non sequential CRFs models, the algorithms derived cannot be used and we
+must rely on approximate methods. These algorithms might need a lot of
+iterations and are not always tractable in practice, For this reason, latest
+researches in the field focus on finding more efficient techniques for parameter
+estimation.
+
+
+
+% have been applied to simpler CRFs models such
+% as linear CRFs or Skip-chain CRF presented in the paper
+
+
+
+% simplify the
+
+% classification tasks
+
+% As we have seen, for classification taks, discriminatives models
+% provides a better representation than generative models, because they
+% avoid representing complex dependencies between the features. Thus
+% CRFs have been successfully applied in a large variety of fields
+
+% In practice, inference on general CRFs is complex, which is why lot of
+% the studies have been applied to simpler CRFs models such as linear CRFs
+% or Skip-chain CRF presented in the paper
+
+
+
+% Linear CRFs have been applied succ
+
+% For sequential tasks, CRFs
+% In the named entity recognition task, this gives
+
+\printbibliography
+
+\end{document}
