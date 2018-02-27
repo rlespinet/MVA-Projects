@@ -1,0 +1,8 @@
+digraph finite_state_machine {
+	rankdir=LR;
+	node [shape = circle]; X Y Z;
+        node [style=filled, fontcolor="#eeeeee", color="#111111"]; T;
+	X -> Z;
+        Y -> Z;
+        Z -> T
+}
