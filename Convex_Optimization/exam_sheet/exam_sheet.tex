@@ -1,0 +1,699 @@
+\documentclass[a4paper, 10pt]{article}
+
+\usepackage[a4paper,margin=0.7in]{geometry}
+\usepackage[french]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{framed}
+\usepackage{amsfonts}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{titlesec}
+\usepackage{listings}
+\usepackage{color}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{multicol}
+
+\definecolor{itmcolor}{RGB}{100,20,20}
+
+% TAILLE DES PAGES (A4 serré)
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.1em}
+
+\setlength{\abovedisplayskip}{0pt}
+\setlength{\belowdisplayskip}{0pt}
+
+\interlinepenalty=10000
+\displaywidowpenalty=10000
+
+\setlength{\textwidth}{17cm}
+% \setlength{\textheight}{24cm}
+\setlength{\oddsidemargin}{-.7cm}
+\setlength{\evensidemargin}{-.7cm}
+\setlength{\topmargin}{-1in}
+
+\titlespacing*{\section}
+{0pt}{0.5em}{0.5em}
+\titlespacing*{\subsection}
+{0pt}{0.5em}{0.5em}
+
+\setlength{\columnseprule}{0.4pt}
+
+\pagestyle{fancy}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0.6pt}% default is 0pt
+\lhead{}
+\rhead{}
+\lfoot{Page \thepage\ of \pageref{LastPage}}
+\rfoot{Rémi Lespinet}
+\cfoot{}
+\cfoot{}
+
+
+
+\newenvironment{note}
+{\begin{framed} \textbf{Note : }}
+{\end{framed}}
+
+
+% Commandes de mise en page
+\newcommand{\file}[1]{\emph{#1}}
+\newcommand{\name}[1]{\emph{#1}}
+\newcommand{\Fig}[1]{Fig \ref{#1} p. \pageref{#1}}
+\newcommand{\Figure}[1]{Figure \ref{#1} p. \pageref{#1}}
+\newcommand{\Tab}[1]{Tab \ref{#1} p. \pageref{#1}}
+\newcommand{\Table}[1]{Table \ref{#1} p. \pageref{#1}}
+\newcommand{\itemi}{\item[$\bullet$]}
+% Commandes color
+\newcommand{\colgood}[1]{\color{ForestGreen} #1}
+\newcommand{\colbad}[1]{\color{BrickRed} #1}
+\newcommand{\rline}{\vspace{0em}\noindent\rule{\textwidth}{1pt}\vspace{0em}}
+
+% Commandes de maths
+\newcommand{\function}[3]{#1 : #2 \to #3}
+\newcommand{\intn}[2]{\left\{ #1 \dots #2 \right\}}
+\newcommand{\intr}[2]{\left[ #1 ; #2 \right]}
+\newcommand{\intro}[2]{\left] #1 ; #2 \right[}
+\newcommand{\dotp}[2]{\langle #1, #2 \rangle}
+\newcommand{\logn}[1]{\ln\left( #1\right)}
+%% \newcommand{\det}[1]{\left| #1 \right|}
+\newcommand{\pd}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\norm}[1]{\|#1\|}
+\newcommand{\abs}[1]{|#1|}
+\newcommand{\set}[2]{\{ #1 \hspace{.1em} | \hspace{.1em}#2 \}}
+\newcommand{\tr}[1]{Tr\left( #1 \right)}
+\newcommand{\pcond}[2]{p(#1 \hspace{-.2em}\mid\hspace{-.2em} #2)}
+
+\newcommand{\grad}[1]{\nabla{#1}}
+\newcommand{\gradwrt}[2]{\nabla_#1{#2}}
+\newcommand{\hess}[1]{\nabla^2{#1}}
+\newcommand{\jac}[1]{\text{D}#1}
+
+\newcommand{\Lag}{\mathcal{L}}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rp}{\mathbb{R}_{+}}
+\newcommand{\Rpp}{\mathbb{R}_{++}}
+
+\newcommand{\Rn}{\mathbb{R}^n}
+\newcommand{\Rnp}{\mathbb{R}_{+}^n}
+\newcommand{\Rnpp}{\mathbb{R}_{++}^n}
+
+\newcommand{\Sp}{\mathcal{S}_{+}}
+\newcommand{\Spp}{\mathcal{S}_{++}}
+
+\newcommand{\Sn}{\mathcal{S}^n}
+\newcommand{\Snp}{\mathcal{S}_{+}^n}
+\newcommand{\Snpp}{\mathcal{S}_{++}^n}
+
+\newcommand{\Tr}[1]{\text{Tr}\hspace{0.2em}#1}
+\newcommand{\bd}[1]{\textbf{bd}\hspace{0.2em}#1}
+\newcommand{\dom}[1]{\textbf{dom}\hspace{0.2em}#1}
+\newcommand{\relint}[1]{\textbf{relint}\hspace{0.2em}#1}
+\newcommand{\inter}[1]{\textbf{int}\hspace{0.2em}#1}
+\newcommand{\epi}[1]{\textbf{epi}\hspace{0.2em}#1}
+\newcommand{\hypo}[1]{\textbf{hypo}\hspace{0.2em}#1}
+
+\newcommand{\iid}{i.i.d }
+\newcommand{\wrt}{w.r.t }
+
+% Commandes informatique
+\newcommand{\pfun}[1]{{\textbf{\texttt{#1}}}}
+
+\newcommand{\itm}[1]{{\color{itmcolor} \textbf{#1}}}
+
+\pagenumbering{arabic}
+
+\title{\textsc{Convex optimization - MVA 2017/2018 \\ \emph{Homework 3}} }
+\author{Rémi Lespinet}
+\date{}
+
+\begin{document}
+
+% \maketitle
+\thispagestyle{fancy}
+
+\section{Convex sets}
+
+\subsection{Definition}
+
+\vspace{-1em}
+\begin{equation*}
+  \begin{array}{ll}
+    \text{Affine set :} & x_1, x_2 \in C \Rightarrow \theta_1 x_1 + \theta_2 x_2 \in C, \forall \theta_1, \theta_2 \in \R\\
+    \text{Convex set :} & x_1, x_2 \in C \Rightarrow \theta_1 x_1 + \theta_2 x_2 \in C, \forall \theta_1, \theta_2 \in \Rp, \theta_1 + \theta_2 = 1\\
+    \text{Cone set (not necessarly convex) :} & x \in C \Rightarrow \theta x \in C, \forall \theta, \in \Rp\\
+    \text{Convex cone :} & x_1, x_2 \in C \Rightarrow \theta_1 x_1 + \theta_2 x_2 \in C, \forall \theta_1, \theta_2 \in \Rp\\
+  \end{array}
+\end{equation*}
+
+$a \in \Rn,\ b \in \R,\ r \in \Rpp,\ P \in \Snpp$
+% \begin{equation*}
+%   \begin{tabular}{|l|l|}
+%     \hline
+%     \set{x}{a^T x = b} \text{(Hyperplane, affine)} & \set{x}{a^T x \le b} \text{(Halfspace, convex)}\\
+%     \hline
+%   \end{array}
+% \end{equation*}
+\subsection{Simple Examples}
+
+\rline
+\vspace{-1em}
+\begin{equation*}
+  \begin{array}{ll}
+    \set{x}{a^T x = b} & \text{(Hyperplane affine)} \\
+    \set{x}{a^T x \le b} & \text{(Halfspace)} \\
+    \set{x}{(x - a)^T (x - a) \le r^2} & \text{(Euclidian ball)} \\
+    \set{x}{(x - a)^T P^{-1}(x - a) \le r^2} & \text{(Ellipsoid)} \\
+    \set{x}{\norm{x - a} \le r} & \text{(Norm ball)} \\
+    \set{(x, t)}{\norm{x} \le t} & \text{(Norm cone, convex cone)} \\
+    \set{x}{a_j^T x \le b_j, 1 \le j \le m,\ c_j^T x = d_j, 1 \le j \le p} & \text{(Polyhedron)} \\
+    \set{x}{x_i \ge 0, 1 \le i \le n} & \text{(Non negative orthant, polyhedral cone)} \\
+    \set{\theta^T x}{\theta \succeq 0, 1^T \theta = 1} & \text{(Simplex)} \\
+    \Snp & \text{(Semidefine matrices, convex cone)} \\
+  \end{array}
+\end{equation*}
+\rline
+
+% \set{x}{a^T x = b} & (Hyperplane affine)
+% \set{x}{a^T x \le b} & (Halfspace)
+% \set{x}{(x - x_c)^T (x - x_c) \le r^2} & \text{(Euclidian ball)}
+% \set{x}{(x - x_c)^T P^{-1}(x - x_c) \le r^2} & \text{(Elipsoid)}
+% \set{x}{\norm{x - x_c} \le r} & \text{(Norm ball)}
+% \set{(x, t)}{\norm{x} \le t} & \text{(Norm cone, convex cone)}
+% \set{x}{a_j^T x \le b_j, j=1,\dots,m,\ c_j^T x = d_j, j=1,\dots,p} & \text{(Polyhedron)}
+% \set{Snp} & \text{(Semidefine matrices, convex cone)}
+
+\subsection{Operation that preserve convexity}
+
+\itm{Intersection} : $\Snp = \cap_{z \in \Rn}\set{X \in \Sn}{z^T X z \ge 0}$
+
+\itm{Image/Inverse by affine function} :
+
+\begin{itemize}
+\item \itm{LMI} :
+  $\set{x \in \Rn}{A(x) = x_1 A_1 + \dots + x_n A_n \preceq B}, A_i, B
+  \in \Sn = f^{-1}(S_n), f(x) = B - A(x)$
+\item \itm{Hyperbolic cone} :
+  $\set{x}{x^T P x \le (c^T x)^2, c^T x \ge 0} = f(\set{(z, t)}{z^T z
+    \le t^2, t \ge 0}, f(x) = (P^{\frac{1}{2}}x, c^T x)$
+\end{itemize}
+\itm{Image/Inverse by perspective} : $P(z, t) = z / t$, $z \in \Rn, t \in \Rpp$
+
+\itm{Image/Inverse by linear fractional} : $f(x) = \frac{A x + b}{c^T x + d}, \dom f = \set{x}{c^T x + d > 0}$
+
+\subsection{Results}
+
+\itm{Insersection with line} : set is convex $\iff$ its intersection with any line is convex
+
+\itm{Midpoint convex} : C closed and midpoint convex $\Rightarrow$ C is convex
+
+\itm{Separating hyperplane} : $\mathcal{C}, \mathcal{D}$ disjoint convex set, are separated by a hyperplane
+
+\itm{Supporting hyperplane} in $x_0 \in \bd{\mathcal{C}}$ : $\set{x}{a^T (x - x_0) = 0}$ if $\forall x \in \mathcal{C}, a^T(x - x_0) \le 0$.
+
+\begin{itemize}
+\item Hyperplane theorem : $\forall x_0 \in \bd{C}$, $\exists$
+  supporting hyperplane in $x_0$, converse if the set is closed, with
+  non empty interior.
+\end{itemize}
+\itm{Proper cone} : K convex, K closed, K has nonempty interior, K contains no lines (Ex: Non negative orthant, $\Snp$)
+
+\itm{Dual cone} : $K^* = \set{y}{x^T y \ge 0, \forall x \in K}$, convex even if K is not
+
+\section{Convex functions}
+
+\itm{Definition} : $\dom{f}$ convex and $\forall x, y \in \dom{f}, 0 \le \theta \le 1, f(\theta x + (1 - \theta) y) \le \theta f(x) + (1 - \theta) f(y)$
+
+\itm{Line segment} : $f$ convex $\iff \forall x, y \in \dom{f},\ g(t) = f(x + t y) $ convex ($\dom{g} = \set{t}{x + t y \in \dom{f}}$
+
+\itm{First order conditions} ($f \in \mathcal{C}^1$): $f$ convex $\iff \dom{f}$ convex and $\forall x, y, f(y) \ge f(x) + \grad{f}(x)^T (y - x)$
+\begin{itemize}
+\item $f$ strictly convex $\iff \dom{f}$ convex and $\forall x, y,\ x \ne y \Rightarrow f(y) > f(x) + \grad{f}(x)^T (y - x)$
+\end{itemize}
+
+\itm{Second order conditions} ($f \in \mathcal{C}^2$): $f$ convex $\iff \dom{f}$ convex and $\forall x \in \dom{f}, \hess{f}(x) \succeq 0$
+\begin{itemize}
+\item $\dom{f}$ convex and $\forall x \in \dom{f}, \hess{f}(x) \succ 0 \Rightarrow f$ strictly convex (converse not true)
+\item $f(x) = x^T P x + q^T x + r$ is convex $\iff P \succeq 0$
+\end{itemize}
+
+\subsection{Simple Examples}
+
+On $\R$\\
+\rline
+\begin{equation*}
+  \begin{array}{lllll}
+    e^{a x}   & \text{ on } \R   & \text{ convex }  & a \in R                     &\text{(Exponential)}         \\
+    x^a       & \text{ on } \Rpp & \text{ convex }  & a \ge 1 \text{ or } a \le 0 &\text{(Powers)}              \\
+              &                  & \text{ concave } & 0 \le a \le 1               &                      \\
+    \abs{x}^p & \text{ on } \R,  & \text{ convex }  & p \ge 1                     &\text{(Powers of abs value)} \\
+    \log(x)   & \text{ on } \Rpp & \text{ concave } &                             &\text{(Logarithm)}           \\
+    x \log(x) & \text{ on } \Rp  & \text{ convex }  &                             &\text{(Negative entropy)}    \\
+  \end{array}
+\end{equation*}
+\rline
+
+On $\Rn$\\
+\rline
+\begin{equation*}
+  \begin{array}{lllll}
+    \norm{\cdot}                             & \text{ on } \Rn            & \text{ convex }  & \text{(Norm)}                  & (Def)\\
+    f(x) = \max\{x_1, \dots x_n\}            & \text{ on } \Rn            & \text{ convex }  & \text{(Max)}                   & (Def)\\
+    f(x, y) = x^2 / y                        & \text{ on } \R \times \Rpp & \text{ convex }  & \text{(Quadratic over linear)} & (Hess)\\
+    f(x) = \log(e^{x_1} + \dots + e^{x_n})   & \text{ on } \Rn            & \text{ convex }  & \text{(Logsum exp (soft max))} & (Hess)\\
+    f(x) = (x_1 x_2 \dots x_n)^{\frac{1}{n}} & \text{ on } \Rnpp          & \text{ concave } & \text{(Geometric mean)}        & (Hess)\\
+    f(X) = \log \det{X}                      & \text{ on } \Snpp          & \text{ concave } & \text{(Log-determinant)}       & (Line + Hess)\\
+  \end{array}
+\end{equation*}
+\rline
+
+\itm{Sublevel set} : $C_{\alpha} = \set{x \in \dom{f}}{f(x) \le \alpha}$
+\begin{itemize}
+\item f convex $\Rightarrow$ sublevels sets are convex. Sublevels sets are convex $\Rightarrow$ $f$ quasiconvex.
+\item f concave $\Rightarrow$ supperlevels sets are convex.
+\end{itemize}
+
+\itm{Epigraph} : $\epi{f} = \set{(x, t) \in \dom{f} \times \R}{f(x) \le t}$
+\begin{itemize}
+\item f convex $\iff \epi{f}$ convex set.
+\item f concave $\iff \hypo{f}$ convex set.
+\item $f(x, Y) = x^T Y^{-1} x$ on $\Rn \times \Snpp$ (Use epigraph and Schur complement)
+\end{itemize}
+
+\subsection{Operation that preserve convexity}
+
+\itm{Non negative weightes sum} : $f = w_1 f_1 + \dots + w_m f_m$ convex if $f_i$ convex and $w_i \ge 0$
+
+\itm{Affine composition} : $g(x) = f(Ax + b)$ convex if $f$ convex, $A \in \R^{n \times m},\ b \in \R^m$
+
+\itm{Pointwise maximum} : $f(x) = \max\{f_1(x), \dots f_m(x)\}$ convex if $f_i$ convex.
+
+\itm{Pointwise supremum} : if $\forall y \in A, x \to f(x, y)$ convex, $g(x) = \sup_{y \in A} \{f(x, y)$ convex.
+\begin{itemize}
+\item Distance to farthest point of $C$, $f(x) = \sup_{y \in C}{norm{x - y}}$
+\item Maximum eigenvalue of symetric matrix, $f(X) = \sup \set{y^T X y}{\norm{y}_2 = 1}$
+\item Maximum singularvalue of a matrix, $f(X) = \sup \set{u^T X v}{\norm{u}_2 = 1, \norm{v}_2 = 1}$
+\item Every convex function can be expressed as a supremum of affine functions
+\end{itemize}
+
+\itm{Composition} : $h \in \R^k \to \R,\ g \in \R^n \to \R^k$
+\begin{itemize}
+\item $h \circ g$ convex if $h$ convex, $g_i$ are convex and $\tilde{h}$ nondecreasing in each argument\\
+  (g K-convex and h K-nondecreasing, K is the non-negative orthant)
+\item $h \circ g$ convex if $h$ convex, $g_i$ are concave and $\tilde{h}$ nonincreasing in each argument
+\item $g$ convex $\Rightarrow$ $exp(g)$ convex, $g$ concave positive $\Rightarrow$ $\log(g(x))$ and $\frac{1}{g(x)}$ concave, $g$ convex $\ge 0$ $\Rightarrow$ $g(x)^p$ convex ($p \ge 1$)
+\end{itemize}
+
+\itm{Minimization} : if $f$ convex in $(x, y)$ and $C$ convex nonempty, $g(x) = \inf_{y \in C}f(x, y)$ convex
+\begin{itemize}
+\item Distance of a point to a convex set $C$, $f(x) = \inf_{y \in C}{\norm{x - y}}$
+\end{itemize}
+
+\itm{Perspective} : if $f : \Rn \to \R$ convex, $g(x, t) = t f(x / t)$ is convex
+\begin{itemize}
+\item $f : \R^m \to \R,$ convex, $g(x) = (c^T x + d) \frac{f(A x + b)}{c^T x + d}$ is convex
+\end{itemize}
+
+\itm{Conjuguate function} : $f^*(y) = \sup_{x \in \dom{f}} (y^T x - f(x))$
+\begin{itemize}
+\item $f(x) = a x + b$, $\dom{f^*} = \{a\}$, $f^*(a) = -b$
+\item $f(x) = - \log(x)$, $\dom{f^*} = -\Rpp$, $f^*(y) = -\log(-y) - 1$
+\item $f(x) = e^x$, $\dom{f^*} = \Rp$, $f^*(y) = y \log(y) - y$
+\item $f(x) = x \log(x)$, $\dom{f^*} = \R$, $f^*(y) = e^{y - 1}$
+\item $f(x) = \frac{1}{x}$, $\dom{f^*} = -\Rp$, $f^*(y) = - 2 \sqrt{-y}$
+\item $f(x) = \frac{1}{2}x^T Q x$, $\dom{f^*} = \Rn$, $f^*(y) = \frac{1}{2} y^T Q^{-1} y$
+\item $f(x) = \log\det{X^{-1}}$, $\dom{f^*} = -\Snpp$, $f^*(y) = \log\det{-Y}^{-1} - n$
+\item $f(x) = \norm{x}$, $f^*(y) = 0$ if $\norm{y}_* \le 1$, $\infty$ otherwise
+\end{itemize}
+
+\itm{Quasiconvex function} : $f : \Rn \to R$ quasiconvex if $\dom{f}$ and all its sublevel set are convex
+\begin{itemize}
+\item Quasiconcave if $-f$ quasiconvex. Quasilinear if quasiconvex and quasiconcave.
+\end{itemize}
+
+\subsection{Generalized inequalities}
+
+\itm{K-nondecreasing} : $f : \Rn \to \R$ K-nondecreasing if $x \preceq_K y \Rightarrow f(x) \le f(y)$
+\begin{itemize}
+\item K-increasing if $x \preceq_K y, x \ne y \Rightarrow f(x) < f(y)$
+\end{itemize}
+
+\itm{Convexity} : $f : \R^n \to \R^m$ convex : $\forall x, y \in \dom{f}, 0 \le \theta \le 1$, $f(\theta x + (1 - \theta) y) \preceq_K \theta f(x) + (1 - \theta) f(y)$
+\begin{itemize}
+\item $f$ convex \wrt matrix inequality $\iff$ $\forall z \in \Rn, x \to z^T f(x) z$ convex.
+\end{itemize}
+
+\section{Optimization problems}
+
+\begin{multicols}{2}
+\itm{Optimization problem in standard form} :
+\begin{displaymath}
+  \begin{array}{lll}
+    \underset{x}{\text{minimize}} & f_0(x) &\\
+    \text{subject to} & f_i(x) \le 0 & i = 1 \dots m\\
+                                  & h_i(x) = 0 & i = 1 \dots p\\
+  \end{array}
+\end{displaymath}
+x : optimization variable, $f_i(x) \le 0$ inequality constraints,
+$h_i(x) = 0$ equality constraints, $p^*$ optimal value, $x^*$ optimal
+point.
+
+\itm{Convex optimization problem} :
+\begin{displaymath}
+  \begin{array}{lll}
+    \underset{x}{\text{minimize}} & f_0(x) &\\
+    \text{subject to} & f_i(x) \le 0 & i = 1 \dots m\\
+                                  & a_i^Tx = b_i & i = 1 \dots p\\
+  \end{array}
+\end{displaymath}
+$f_0, \dots f_m$ convex. Any locally optimal point is (globally)
+optimal.
+\end{multicols}
+
+\subsection{Convex optimization problems}
+
+\begin{multicols}{2}
+  \itm{Linear optimization problem (LP)} :
+  \begin{displaymath}
+    \begin{array}{ll}
+      \underset{x}{\text{minimize}} & c^T x + d\\
+      \text{subject to} & G x \preceq h\\
+                        & A x = b\\
+    \end{array}
+  \end{displaymath}
+
+  \itm{Quadratic program (QP)} :
+  \begin{displaymath}
+    \begin{array}{ll}
+      \underset{x}{\text{minimize}} & \frac{1}{2} x^T P x + q^T x + r\\
+      \text{subject to} & G x \preceq h\\
+                        & A x = b\\
+    \end{array}
+  \end{displaymath}
+
+  \itm{Quadraticly constraint quadratic program (QCQP)} :
+  \begin{displaymath}
+    \begin{array}{lll}
+      \underset{x}{\text{minimize}} & \frac{1}{2} x^T P x + q^T x + r &\\
+      \text{subject to} & \frac{1}{2} x^T P_i x + q_i^T x + r_i \preceq 0 & i=1,\dots, m\\
+                                    & A x = b&\\
+    \end{array}
+  \end{displaymath}
+
+  \itm{Second order cone program (SOCP)} :
+  \begin{displaymath}
+    \begin{array}{lll}
+      \underset{x}{\text{minimize}} & f^T x &\\
+      \text{subject to} & \norm{A_i x + b_i} \le c_i^T x + d_i & i=1,\dots, m\\
+                                    & F x = g&\\
+    \end{array}
+  \end{displaymath}
+  Equivalent to QCQP is $c_i = 0, \forall i$.
+\end{multicols}
+
+\subsection{Extensions}
+
+\begin{multicols}{2}
+  \itm{Geometric programming (GP)} :
+  \begin{equation*}
+    \begin{array}{lll}
+      \underset{x}{\text{minimize}} & f_0(x) &\\
+      \text{subject to} & f_i(x) \le 0 & i = 1 \dots m\\
+                        & h_i(x) = 0 & i = 1 \dots p\\
+    \end{array}
+  \end{equation*}
+  $f_0, \dots f_m$ are posynomial, $h_0, \dots h_p$ monomial.\\(f
+  monomial $\iff$
+  $f(x) = c x_1^{a_1} \dots x_n^{a_n},\ a_i \in R, c > 0$,
+  posynomial is sum of monomials).
+
+  GP can be transformed to convex problems by change of variable
+  $y_i = \log(x_i)$
+
+  \itm{Semidefinite programming (SDP)} :
+  \begin{equation*}
+    \begin{array}{ll}
+      \underset{x}{\text{minimize}} & c^T x \\
+      \text{subject to} & x_1 F_1 + \dots + x_n F_n \preceq 0\\
+                        & A x = b\\
+    \end{array}
+  \end{equation*}
+  $F_1, \dots, F_n \in \mathcal{S}^k$, $A \in \R^{p \times n}$
+  (Similar to LP)
+
+
+\end{multicols}
+
+\subsection{Examples}
+
+\begin{multicols}{2}
+  \itm{Chebyshev center (LP)} : fit
+  $\mathcal{B} = \set{x_c + u}{\norm{u}_2 \le r}$ in
+  $\mathcal{P} = \set{x}{a_i^T x \le b_i, i=1,\dots,m}$
+  \begin{equation*}
+    \begin{array}{lll}
+      \underset{x}{\text{minimize}} & r &\\
+      \text{subject to} & a_i^T x_c + r \norm{a_i}_2 \le b_i & i = 1, \dots, m\\
+    \end{array}
+  \end{equation*}
+
+  \itm{Chebyshev center (LP)} : fit
+  $\mathcal{B} = \set{x_c + u}{\norm{u}_2 \le r}$ in
+  $\mathcal{P} = \set{x}{a_i^T x \le b_i, i=1,\dots,m}$
+  \begin{equation*}
+    \begin{array}{lll}
+      \underset{x}{\text{minimize}} & r &\\
+      \text{subject to} & a_i^T x_c + r \norm{a_i}_2 \le b_i & i = 1, \dots, m\\
+    \end{array}
+  \end{equation*}
+
+\end{multicols}
+
+\section{Duality}
+
+We consider problem in standard form.
+
+\itm{Lagrangian} : $L(x, \lambda, \nu) = f_0(x) + \sum_{i = 1}^m \lambda_i f_i(x) + \sum_{i = 1}^m \nu_i h_i(x)$. $\dom{L} = \mathcal{D} \times \R^m \times \R^p$.
+\begin{itemize}
+\item  $\lambda_i, \nu_i$ are the Lagrange multipliers
+\end{itemize}
+
+\itm{Lagrange dual function} : $g(\lambda, \nu) = \inf_{x \in \mathcal{D}} \Lag(x, \lambda, \nu) = \inf_{x \in \mathcal{D}} f_0(x) + \sum_{i = 1}^m \lambda_i f_i(x) + \sum_{i = 1}^m \nu_i h_i(x)$
+
+\itm{Lower bound on $p^*$} : $\forall \lambda \succeq 0,\ \forall \nu \in \R^p$, $g(\lambda, \nu) \le p^*$
+
+\itm{Lagrange dual problem} :
+\begin{equation*}
+  \begin{array}{lll}
+    \underset{\lambda, \nu}{\text{maximize}} & g(\lambda, \nu) \\
+    \text{subject to} & \lambda \succeq 0 \\
+  \end{array}
+\end{equation*}
+\begin{itemize}
+\item always a convex problem (concave maximization problem), even if
+  the primal is not convex
+\end{itemize}
+
+\itm{Weak duality} : $d^* \le p^*$, (always hold even when $p^*$ and
+$d^*$ infinite). $p^* - d^*$ is the duality gap
+
+\itm{Strong duality} : if $d^* = p^*$ holds, we have strong duality.
+
+\itm{Slater's condition} : for a convex problem, if
+$\exists x \in \relint{\mathcal{D}},\ s.t. f_i(x) < 0,\ i = 1, \dots,
+m,\ A x = b$ (strict feasibility), then strong duality holds (can be
+relaxed to $f_i(x) \le 0$ for affine constraints) and dual optimal value is attained.
+% If $\mathcal{D}$ has nonempty interior, we only need $x \in \inter{\mathcal{D}}$
+
+
+\itm{Complementary slackness} : suppose $x^*$ primal optimal,
+$(\lambda^*$, $\nu^*)$ dual optimal, then $x^*$ minimizes
+$\Lag(x, \lambda^*, \nu^*)$ over $x$ and
+$\lambda_i^* f_i(x^*) = 0,\ i = 1,\dots, m$
+
+\itm{KKT conditions} : suppose $f_i$ and $h_i$ are differentiable, let
+$x^*$ primal optimal, $(\lambda^*$, $\nu^*)$ dual optimal, then
+\begin{itemize}
+\item $\grad{f_0}(x^*) + \sum_{i = 1}^m \lambda_i^* \grad{f_i}(x^*) + \sum_{i = 1}^m \nu_i^* \grad{h_i}(x^*) = 0$
+\item $f_i(x^*) \le 0,\ i = 1, \dots, m$
+\item $h_i(x^*) = 0,\ i = 1, \dots, m$
+\item $\lambda_i^* \ge 0,\ i = 1, \dots, m$
+\item $\lambda_i^* f_i(x^*) = 0,\ i = 1, \dots, m$
+\end{itemize}
+
+\itm{KKT condition for convex pb} : KKT condition are also sufficient
+if the problem is convex, e.g, if
+$(\tilde{x}, \tilde{\lambda}, \tilde{\nu})$ satisfy the KKT
+conditions, then $\tilde{x}$ is primal optimal,
+$(\tilde{\lambda}, \tilde{\nu})$ is dual optimal and we have $0$
+duality gap.
+
+\itm{KKT with Slaters condition} : if Slater's condition holds, x is
+optimal i.i.f there are $(\lambda, \nu)$ s.t $(x, \lambda, \nu)$
+satisfy the KKT conditions.
+
+\subsection{Examples}
+
+
+% \begin{equation*}
+%   \begin{blockarray}{ll}
+%     \begin{block}{ll}
+%       \underset{x}{\text{min}} & c^T x \\
+%       \text{subject to} & A x = b \\
+%                                &  x \succeq 0 \\
+%     \end{block}
+%   \end{blockarray}
+%   \begin{blockarray}{ll}
+%     \begin{block}{ll}
+%       \underset{x}{\text{max}} & - b^T \mu \\
+%       \text{subject to} & A^T \mu + c \succeq 0\\
+%     \end{block}
+%   \end{blockarray}
+%   \begin{blockarray}{ll}
+%     \begin{block}{ll}
+%       \underset{x}{\text{min}} & c^T x \\
+%       \text{subject to} & A x \preceq b \\
+%     \end{block}
+%   \end{blockarray}
+%   \begin{blockarray}{ll}
+%     \begin{block}{ll}
+%       \underset{x}{\text{max}} & - b^T \lambda \\
+%       \text{subject to} & A^T \lambda + c = 0\\
+%                                & \lambda \succeq 0\\
+%     \end{block}
+%   \end{blockarray}
+% \end{equation*}
+
+
+% \begin{equation*}
+%   \begin{array}{ll}
+%     \begin{array}{lll}
+%       \underset{x}{\text{min}} & c^T x \\
+%       \text{subject to} & A x = b \\
+%                                &  x \succeq 0 \\
+%     \end{array}\\
+%     \begin{array}{lll}
+%       \underset{x}{\text{max}} & - b^T \mu \\
+%       \text{subject to} & A^T \mu + c \succeq 0\\
+%     \end{array} &
+%                   \begin{array}{lll}
+%                     \underset{x}{\text{min}} & c^T x \\
+%                     \text{subject to} & A x \preceq b \\
+%                   \end{array}\\
+%     \begin{array}{lll}
+%       \underset{x}{\text{max}} & - b^T \lambda \\
+%       \text{subject to} & A^T \lambda + c = 0\\
+%                                & \lambda \succeq 0\\
+%     \end{array}
+%   \end{array}
+% \end{equation*}
+
+\begin{equation*}
+\begin{array}{l|l|l}
+    \begin{array}{lll}
+      \underset{x}{\text{min}} & c^T x \\
+      \text{subject to} & A x = b \\
+                               &  x \succeq 0 \\
+      & & \\
+      \underset{x}{\text{max}} & - b^T \mu \\
+      \text{subject to} & A^T \mu + c \succeq 0\\
+    \end{array} &
+    \begin{array}{lll}
+      \underset{x}{\text{min}} & c^T x \\
+      \text{subject to} & A x \preceq b \\
+      & & \\
+      \underset{x}{\text{max}} & - b^T \lambda \\
+      \text{subject to} & A^T \lambda + c = 0\\
+                               & \lambda \succeq 0\\
+    \end{array} &
+    \begin{array}{lll}
+      \underset{x}{\text{min}} & \norm{x} \\
+      \text{subject to} & A x = b \\
+      & & \\
+      \underset{x}{\text{max}} & - b^T \mu \\
+      \text{subject to} & \norm{A^T \lambda} \le 1\\
+    \end{array}
+\end{array}
+\end{equation*}
+
+\rline
+\begin{equation*}
+  \begin{array}{l|l}
+    \begin{array}{ll}
+      \underset{x}{\text{min}} & \log\det{X^{-1}}\\
+      \text{subject to} & a_i^T X a_i \le 1,\ i = 1, \dots, m\\
+                               & \\
+      \underset{x}{\text{max}} & - \log \det(\sum_{i = 1}^m \lambda_i a_i a_i^T) \\
+                               & - 1^T \lambda + n\\
+      \text{subject to} & \lambda \succeq 0\\
+    \end{array} &
+                  \begin{array}{lll}
+                    \underset{x}{\text{min}} & \frac{1}{2}x^T P_0 x + q_0^T x + r_0 &\\
+                    \text{subject to} & \frac{1}{2}x^T P_i x + q_i^T x + r_i \le 0 & i = 1, \dots, m\\
+                                             & & \\
+                    \underset{x}{\text{max}} & - \frac{1}{2} q(\lambda)^T P(\lambda) q(\lambda) + r(\lambda) \\
+                    \text{subject to} & \lambda \succeq 0\\
+                  \end{array} \\
+  \end{array}
+\end{equation*}
+
+\subsection{Extra stuff}
+
+\itm{Dual norm} : $\norm{z}_* = \sup \set{z^T x}{\norm{x} \le 1}$
+\begin{itemize}
+\item $\forall x, z \in \Rn,\ z^T x \le \norm{x} \norm{z}_*$
+\end{itemize}
+
+\itm{Eigenvalues and singular values inequalities} : $\lambda_{\text{max}}(A) = \sup_{x \ne 0} \frac{x^T A x}{x^T x}$, $\lambda_{\text{min}}(A) = \inf_{x \ne 0} \frac{x^T A x}{x^T x}$ ($A \in \Sn$),
+$\sigma_{\text{max}}(A) = \sup_{x \ne 0, y \ne 0} \frac{x^T A y}{\norm{x}_2 \norm{y}_2}$
+
+\itm{Schur complement} : Let$X \in \Sn$, $X =
+\begin{bmatrix}
+    A & B \\
+    B^T & C
+  \end{bmatrix}$ where $A \in \mathcal{S}^k$, If $\det{A} \ne 0$,
+  $S = C - B^T A^{-1} B$ is the Schur complement of A in X.
+  \begin{itemize}
+  \item $\det{X} = \det{A} \det{S}$
+  \item $\inf_{u} \begin{bmatrix}
+    u \\
+    v
+  \end{bmatrix}^T \begin{bmatrix}
+    A & B \\
+    B^T & C
+  \end{bmatrix} \begin{bmatrix}
+    u \\
+    v
+  \end{bmatrix}  = v^T S v$
+\item $X \succ 0$ $\iff$ $A \succ 0$ and $S \succ 0$
+\item if $A \succ 0$ then $X \succeq 0$ $\iff$ $S \succeq 0$
+\end{itemize}
+
+\itm{Taylor's approximation} : $\hat{f}(x + v) = f(x) + \grad{f}(x)^T v + \frac{1}{2} v^T \hess{f} v$
+
+\itm{Newton's method} : $x_{n+1} \leftarrow x_n - \alpha_n(\hess{f}(x))^{-1} \grad{f}(x)$
+
+\itm{Some Gradients} :
+\begin{itemize}
+\item $\gradwrt{x}{(a^T x + b)} = a$
+\item $\gradwrt{x}{(\frac{1}{2}x^T A x)} = \frac{1}{2} (A^T + A) x$
+\item $\gradwrt{x}{(\Tr(A^T X + b)} = A$
+\item $\gradwrt{x}{(\det(X))} = \bar{X}$, $\bar{X}$ comatrix of $X$ ($\bar{X} = \det(X)X^{-T}$)
+\item $\gradwrt{x}{(\log\det(X))} = X^{-1}$
+\item $f(X) = X^{-1} \Rightarrow \gradwrt{x}{f}(H) = -X^{-1} H X^{-1}$
+\end{itemize}
+
+
+% Since $L(x, \mu)$ is a convex function of x, we can find the
+% minimizing x from the optimality condition
+
+
+\end{document}
