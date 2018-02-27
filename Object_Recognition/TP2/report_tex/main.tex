@@ -1,0 +1,917 @@
+\documentclass{article}
+\input{packages}
+\input{macros}
+
+%% \setlength{\parskip}{\baselineskip}%
+\setlength\parindent{0pt}
+\setlength{\parskip}{.5em}
+
+\renewcommand\thesection{\Roman{section}}
+\renewcommand\thesubsection{\Roman{section}.\Alph{subsection}}
+\titlespacing{\section}
+              {0pt}{1\baselineskip}{1\baselineskip}
+\titlespacing{\subsection}
+              {0pt}{0.8\baselineskip}{0.8\baselineskip}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Header
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\renewcommand{\assignmenttitle}{Assignment 2: Image classification}
+\renewcommand{\studentname}{Rémi Lespinet}
+\renewcommand{\email}{remi.lespinet@ens-paris-saclay.fr}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Syntax for using figure macros:
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% \singlefig{filename}{scalefactor}{caption}{label}
+% \doublefig{\subfig{filename}{scalefactor}{subcaption}{sublabel}}
+%           {\subfig{filename}{scalefactor}{subcaption}{sublabel}}
+%           {global caption}{label}
+% \triplefig{\subfig{filename}{scalefactor}{subcaption}{sublabel}}
+%           {\subfig{filename}{scalefactor}{subcaption}{sublabel}}
+%           {\subfig{filename}{scalefactor}{subcaption}{sublabel}}
+%           {global caption}{label}
+%
+% Tips:
+% - with scalefactor=1, a single figure will take the whole page width; a double figure, half page width; and a triple figure, a third of the page width
+% - image files should be placed in the image folder
+% - no need to put image extension to include the image
+% - for vector graphics (plots), pdf figures are suggested
+% - for images, jpg/png are suggested
+% - labels can be left empty {}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Beginning of assignment
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+\maketitle
+
+
+% \singlefig{sift50matches}{0.8}{Representation of $50$ matches  given
+%   by the nearest neighbor methods for the two images \emph{all\_souls\_000002.jpg} and
+%   \emph{all\_souls\_000015.jpg} for $peakThreshold = 0.005$.}{fig:sift50matches}
+
+% \doublefig{\subfig{similarity_1_3.png}{1}{similarity co-variant detector}{fig:similarity-1-3}}
+%         {\subfig{affinity_1_3.png}{1}{affine co-variant detector}{fig:affinity-1-3}}
+%         {Comparison of the number of matches between similarity and affine co-variant detectors for low perspective (images 1 and 3)}{fig:affine-1-3}
+
+% \triplefig{\subfig{features-im1-0-0005.png}{1}{$peakThreshold = 0.0005$}{fig:im1-0.0005}}
+%           {\subfig{features-im1-0-001.png}{1}{$peakThreshold = 0.001$}{fig:im1-0.001}}
+%           {\subfig{features-im1-0-005.png}{1}{$peakThreshold = 0.005$}{fig:im1-0.005}}
+%           {Feature detectors with three different values of $peakThreshold$ for image1}{fig:features-im1}
+
+\newpage
+
+\section{Training and testing an Image Classifier}
+
+\subsection{Data preparation and feature extraction}
+
+\question{QA1: Why is the spatial tiling used in the histogram image representation?}
+
+Using spatial tiling adds spatial information about the objects on the
+scene, doing so implies to compute K-means 4 times (one for each quadrant),
+hence the computed words are 4 times larger.
+As a consequence, we will only compare features descriptors that
+are in the same quadrant (when we detect a feature, we will compute
+its SIFT descriptor, find the bin associated to that descriptor
+in the quadrant it has been detected and account for that bin in
+the part of the histogram corresponding to that quadrant).
+
+If the number of training images is large enough, this is a good way
+to add spatial information without impacting the time complexity
+of the classifier.
+
+% Image -> SIFT descriptors -> 4 x K-means sur les descripteurs
+
+
+% this stems from the fact that we have lost the spatial information procured
+% by the tiling
+
+% QE4 We see in the results presented in the question QE2, that the
+% histograms normalized with $\mathcal{L}^2$ provided the best results
+% compared to non normalized and $\mathcal{L}^1$ normalized histograms
+
+
+% Using spatial tiling allows us to recognize multiple objects in a scene, to provide
+% a spatial information about the objects found in the scene, and to do a more accurate
+% histogram matching
+
+% Larger vectors TODO ?
+
+\subsection{Train a classifier for images containing aeroplanes}
+
+\question{QB1: Show the ranked training images in your report}
+
+The ranked images are represented in figure~\ref{fig:rank-airplanes}
+
+\singlefig{rank_airplanes}{0.8}{Representation of the top 36 ranked
+  training images classified by a linear SVM classifier on a training
+  database composed of aeroplane images (positive) and background
+  images (negative)}{fig:rank-airplanes}
+
+\question{QB2: In your report, show relevant patches for the three
+  most relevant visual words (in three separate figures) for the top
+  ranked training image. Are the most relevant visual words on the
+  airplane or also appear on background?}
+
+The three most relevant visual words for the top ranked training image
+are represented in figure~\ref{fig:best-airplane-words}.
+We can see in this figure that these visual words also appears on the
+background, in particular, the rank 1 visual word appears almost
+exclusively on the background of the image. An explanation for this
+is that images containing airplanes often contains sky, airstrip, etc
+which are used by the algorithm to recognize airplanes.
+
+\triplefigc
+{\subfig{cropped_airplane_best_word1.png}{0.7}{Rank $1$
+    visual word (index $201$) corresponding to $797$ feature
+    descriptors, $word\_score = weight \cdot count = 0.21$}
+  {fig:best-airplane-word1}}
+{\subfig{cropped_airplane_best_word2.png}{0.7}{Rank $2$ visual word
+    (index $455$) corresponding to $787$ feature descriptors,
+    $word\_score = weight \cdot count = 0.15$}
+  {fig:best-airplane-word2}}
+{\subfig{cropped_airplane_best_word3.png}{0.7}{Rank $3$ visual word
+    (index $336$) corresponding to $871$ feature descriptors,
+    $word\_score = weight \cdot count =
+    0.14$}
+  {fig:best-airplane-word3}}
+{Representation of the patches for the 3 most relevant visual words
+  for the top ranked image trained on the airplane dataset. count
+  number of descriptors associated}{fig:best-airplane-words}
+
+\clearpage
+
+\subsection{Classify the test images and assess the performance}
+
+\question{QC1: Why is the bias term not needed for the image ranking?}
+
+The bias term is not needed because we do not need the exact score, we
+only need to rank the images based on their score, and the ranking
+goes unchanged if we add an arbitrary constant.
+
+\subsection{Learn a classifier for the other classes and assess its performance}
+
+\question{QD1: In your report, show the top ranked images,
+  precision-recall curves and APs for the test data of all the three
+  classes (aeroplanes, motorbikes, and persons). Does the AP
+  performance for the different classes match your expectations based
+  on the variation of the class images?}
+
+% The figure~\ref{fig:rank-test-airplanes} represents the top 36 ranked
+% test images in the test airplane set for the classifier
+% trained on the train airplane data.
+
+The figure~\ref{fig:rank-test-airplanes},
+(resp. \ref{fig:rank-test-motorbikes} and \ref{fig:rank-test-persons})
+represents the 36 best ranked test images according to the classifier
+trained on the train data using a dataset composed of airplanes
+(resp. motorbikes and persons) images and background images.
+
+\singlefig{rank_test_airplanes}{0.82}{top 36 test images classified as airplane by the classifier using a database composed of airplane and background images}{fig:rank-test-airplanes}
+
+\singlefig{rank_test_motorbikes}{0.82}{top 36 test images classified as motorbikes by the classifier using a database composed of motorbikes and background images}{fig:rank-test-motorbikes}
+
+\singlefig{rank_test_persons}{0.82}{top 36 test images classified as persons by the classifier using a database composed of persons and background images}{fig:rank-test-persons}
+
+\clearpage
+
+The precision-recall curves for each of the three classes (airplane,
+motorbike and person) is represented in the
+figures~\ref{fig:pr-test-airplanes}, \ref{fig:pr-test-motorbikes} and
+\ref{fig:pr-test-persons} respectively.
+
+\triplefign
+{\subfig{pr_test_airplanes}{0.85}{precision-recall curve for the airplane classe}{fig:pr-test-airplanes}}
+{\subfig{pr_test_motorbikes}{0.85}{precision-recall curve for the motorbike classe}{fig:pr-test-motorbikes}}
+{\subfig{pr_test_persons}{0.85}{precision-recall curve for the person classe}{fig:pr-test-persons}}
+{Representation of the precision-recall curve for each of the three classes}{fig:pr-test}
+
+The AP performance is presented in the table~\ref{tab:ap}
+\begin{table}[h!]
+  \centering
+  \begin{tabular}{| l | l |}
+    \hline
+    Classe & AP \\
+    \hline
+    Airplane  & 54.95\% \\
+    Motorbike & 48.66\% \\
+    Person    & 70.64\% \\
+    \hline
+  \end{tabular}
+  \captionof{table}{AP for each of the 3 classes} \label{tab:ap}
+\end{table}
+
+For the three classes, the number of train images is the number of
+background train images ($1019$) plus the number of images in the
+train data for this class, similarly, the number of test images is the
+number of background test images ($1077$) plus the number of images in
+the test data for this class. Table~\ref{tab:train-test-comp} shows the
+composition of the datasets used for this question on each of the
+three classes. (The test ratio corresponds to the random line present
+in the precition-recall curves)
+
+\begin{table}[h!]
+  \centering
+  \begin{tabular}{| c | c | c | c | c | c | c |}
+    \hline
+    classes & \shortstack{positive \\ train images} & \shortstack{negative \\ train images} & train ratio & \shortstack{positive \\ test images} & \shortstack{negative \\ test images} & test ratio \\
+    \hline
+    aeroplane & 112 & 1019 & 9.90 \% & 126 & 1077 & 10.47 \%  \\
+    motorbike & 120 & 1019 & 10.54 \% & 125 & 1077 & 10.40 \%  \\
+    person    & 1025 & 1019 & 50.15 \% & 983 & 1077 & 47.72 \%  \\
+    \hline
+  \end{tabular}
+  \captionof{table}{Composition of the train dataset and the test dataset for each of the 3 classes} \label{tab:train-test-comp}
+\end{table}
+
+
+The performances are correct given the fact that the model is not very
+elaborate yet, for the aeroplane dataset, we reach more than 50\%
+average precision, which is decent in view of the low fraction number
+of images in the test dataset that actually represent an aeroplane
+(10\%).
+
+% \doublefig
+% {\subfig{rank_test_airplanes}{1}{similarity co-variant detector}{fig:rank-test-airplanes}}
+% {\subfig{pr_test_airplanes}{1}{affine co-variant detector}{fig:pr-test-airplanes}}
+% {Comparison of the number of matches between similarity and affine co-variant detectors for low perspective (images 1 and 3)}{fig:affine-1-3}
+
+
+% Similarly, the figures \ref{fig:rank-test-motorbikes} and
+% \ref{fig:rank-test-persons} represents the top 36 ranked images
+% for the motorbike and person datasets.
+
+
+\question{QD2: For the motorbike class, give the rank of the first
+  false positive image. What point on the precision-recall curve
+  corresponds to this first false positive image? Give in your report
+  the value of precision and recall for that point on the
+  precision-recall curve. }
+
+For the motorbike, the best ranked image is a false positive (it's
+represented in figure~\ref{fig:motorbike-test-rank1})
+
+\singlefig{motorbike_test_rank1}{0.4}{Best ranked image for the
+  motorbike class (false positive)}{fig:motorbike-test-rank1}
+
+It corresponds to the situation where we only select the top ranked
+image. This image is wrong, so the recall is $0$ and the precision is
+also $0$. In matlab, if we extract the first 10 points in the precision-recall
+curve we obtain
+\begin{center}
+  \begin{tabular}{| l | l | l | l | l | l | l | l | l | l | l | l }
+    \hline
+    recall & 0 & 0 & 0.008 & 0.016 & 0.024 & 0.032 & 0.04 & 0.040 & 0.040 & 0.048 & \dots \\
+    \hline
+    precision & 1 & 1.0e-10 & 0.500 & 0.667 & 0.750 & 0.800 & 0.833 & 0.714 & 0.625 & 0.667 & \dots \\
+    \hline
+  \end{tabular}
+\end{center}
+The corresponding point is the second entry ($0$, $1.0e-10$).  The
+first point is a convention when no sample are predicted (the
+number of positive images returned as well as the number of return
+images is $0$, so the precision is $0$ over $0$ which is $1$ by
+convention, and the number of positive images is $120$ for the
+motorbike, so the recall is $0$ over $120$ which is $0$).
+We can see that point in the figure~\ref{fig:pr-test-motorbikes}.
+
+
+\subsection{Vary the image representation}
+
+\question{QE1: Include in your report precision recall-curves and APs,
+  and compare the test performance to the spatially tiled
+  representation in stage D. How is the performance changing? Why?}
+
+The precision-recall curves for all datasets are presented in
+figure~\ref{fig:pr-test-notiling}. The comparison of the average
+precision with and without spatial tiling is presented in the
+table~\ref{tab:ap-notiling}. We see that the performance is
+decreasing, this stems from the fact that we have lost the spatial
+information provided by the tiling. (For the next questions, I
+have reactivated the spatial tiling)
+
+\triplefign
+{\subfig{pr_test_airplanes_notiling}{0.85}{precision-recall curve for the airplane classe}{fig:pr-test-airplanes-notiling}}
+{\subfig{pr_test_motorbikes_notiling}{0.85}{precision-recall curve for the motorbike classe}{fig:pr-test-motorbikes-notiling}}
+{\subfig{pr_test_persons_notiling}{0.85}{precision-recall curve for the person classe}{fig:pr-test-persons-notiling}}
+{Precision-recall curve for each of the three classes when there's no spatial tiling}{fig:pr-test-notiling}
+
+\begin{table}[h!]
+  \centering
+  \begin{tabular}{| c | c | c |}
+    \hline
+    Classe & AP (tiling) & AP (no tiling) \\
+    \hline
+    Motorbike & \textbf{48.66\%} & 41.54\%\\
+    Airplane  & \textbf{54.95\%} & 51.82\% \\
+    Person    & \textbf{70.64\%} & 69.61\%\\
+    \hline
+  \end{tabular}
+  \captionof{table}{Effect of tiling on average precision for each of
+    the 3 classes} \label{tab:ap-notiling}
+\end{table}
+
+\question{QE2: Modify exercise1.m to use L1 normalization and no
+  normalization and measure the performance change}
+
+The table~\ref{tab:ap-normalization} presents the different average
+precision obtained for different type of normalizations
+($\mathcal{L}^2$, $\mathcal{L}^1$ and no normalization) for each of
+the three classes (Airplane, Motorbike and Person).
+
+\begin{table}[h!]
+  \centering
+  \begin{tabular}{| c | c | c | c |}
+    % \hline
+    % & \multicolumn{3}{c|}{Average precision (AP)} \\
+    \hline
+    Classe & $\mathcal{L}^1$ normalization & $\mathcal{L}^2$ normalization & no normalization \\
+    \hline
+    Motorbike & 26.00\% & 48.66\% & \textbf{48.73\%} \\
+    Aeroplane & 51.68\% & 54.95\% & \textbf{62.45\%} \\
+    Person    & 56.54\% & \textbf{70.64\%} & 67.20\% \\
+    \hline
+  \end{tabular}
+  \captionof{table}{Effect of the histogram normalization on average
+    precision for each of the 3 classes} \label{tab:ap-normalization}
+\end{table}
+
+% \begin{table}[h!]
+%   \centering
+%   \begin{tabular}{| c | c | c | c |}
+%     \hline
+%     Classe & $\mathcal{L}^1$ normalization & $\mathcal{L}^2$ normalization & no normalization \\
+%     \hline
+%     Airplane  & \textbf{56.24\%} & 51.82\% & 55.79\%\\
+%     Motorbike & 31.43\% & \textbf{41.54\%} & 32.16\%\\
+%     Person    & 60.14\% & \textbf{69.61\%} & 63.79\%\\
+%     \hline
+%   \end{tabular}
+%   \captionof{table}{Effect of the histogram normalization on average precision for each of
+%     the 3 classes (no spatial tiling) } \label{tab:ap-normalization}
+% \end{table}
+
+\question{QE3: What can you say about the self-similarity, K(h,h), of
+  a BoVW histogram h that is L2 normalized?}
+
+We have
+\begin{equation*}
+  K(h, h) = \sum_{i = 1}^d h_i^2 = \| h \|_2^2
+\end{equation*}
+Hence if h is $\mathcal{L}^2$ normalized, $K(h, h) = 1$
+
+If $h$ and $h'$ are $\mathcal{L}^2$ normalized, Cauchy-Schwarz
+inequality gives us
+\begin{equation*}
+  K(h, h') \le K(h, h) K(h', h') = 1
+\end{equation*}
+This means that $K(h, h') \le 1$ with equality when $h = h'$.
+
+This is not true if we normalize with $\mathcal{L}^1$, it is possible
+to have $K(h, h') > K(h, h)$ with $h$ and $h'$ being different.
+For example in dimension 2, if we take $h = (0.75, 0.25)$ and
+$h' = (1, 0)$, we have $\|h\|_1 = 1$, $\|h'\|_1 = 1$,
+$K(h, h') = 0.75$, but $K(h, h) = 0.625$
+
+
+\question{QE4: Do you see a relation between the classification performance and L2 normalization?}
+
+We can see in the table that the $\mathcal{L}^2$ gives better
+results than the $\mathcal{L}^1$ norm for all the 3 classes, the
+results on this training set if we don't normalize are slighly
+better in the \emph{Motorbike} and \emph{Aeroplane} cases.
+
+% results for the class \emph{person},  when compared to the
+% $\mathcal{L}^1$ norm and to no normalization at all.
+
+\subsection{Vary the classifier}
+
+\question{QF1: Based on the rule of thumb introduced above, how should
+  the BoVW histograms h and h' be normalized? Should you apply this
+  normalization before or after taking the square root?}
+
+Explicitely computing the mapping means taking the square root of the
+histogram values $\tilde{h}_i = \sqrt{h_i}$. If we feed the linear SVM
+classifier with $\tilde{h}$, from the proposed rule of thumb we want
+$\tilde{h}$ to be $\mathcal{L}^2$ normalized.
+
+\begin{equation*}
+  h_i \xrightarrow{\sqrt{.}} \sqrt{h_i} \xrightarrow{\mathcal{L}^2 normalize} \dfrac{\sqrt{h_i}}{\sqrt{\sum_{i = 1}^d \sqrt{h_i}^2}} = \dfrac{\sqrt{h_i}}{\sqrt{\sum_{i = 1}^d |h_i|}}
+\end{equation*}
+
+This is equivalent to
+\begin{equation*}
+  h_i \xrightarrow{\mathcal{L}^1 normalize} \dfrac{h_i}{\sum_{i = 1}^d |h_i|} \xrightarrow{\sqrt{.}} \dfrac{\sqrt{h_i}}{\sqrt{\sum_{i = 1}^d |h_i|}}
+\end{equation*}
+
+So we can either normalize $h$ in $\mathcal{L}^1$ before applying the
+square root or take the square root and then normalize in $\mathcal{L}^2$
+
+\question{QF2: Why is this procedure equivalent to using the Hellinger
+  kernel in the SVM classifier?}
+
+Given two histograms $h$ and $h'$, the given procedure will feed the
+linear SVM with the modified input histograms $\hat{h}$ and $\hat{h'}$,
+and we have
+
+% This is equivalent, because the linear SVM will be measuring similarities
+% using the modified input histograms $\hat{h}$, and the
+\begin{equation*}
+  K_{Linear}(\hat{h}, \hat{h'}) = \sum_{i = 1}^d \hat{h}_i \hat{h'}_i = \sum_{i = 1}^d \sqrt{h_i} \sqrt{h'_i} = K_{Hellinger}(h, h')
+\end{equation*}
+
+Hence this procedure is equivalent to using the Hellinger kernel in
+the SVM classifier.
+
+\question{QF3: Why is it an advantage to keep the classifier linear,
+  rather than using a non-linear kernel?}
+
+Using a linear method on the modified histograms allows to compute
+the square roots only once, rather than computing it each time
+the kernel is evaluated, which increases performance.
+
+\question{QF4: Try the other histogram normalization options and check
+  that your choice yields optimal performance. Summarize your finding
+  in the report (include only mAP results, no need to include the full
+  precision-recall curves).}
+
+The comparison of average precisions for different normalizations
+($\mathcal{L}^1$, $\mathcal{L}^2$ and no normalization) of the
+histogram, using a Hellinger kernel classifier are presented in the
+table~\ref{tab:ap-normalization-hellinger}. We see that, as expected,
+the overall best results are obtained using $\mathcal{L}^1$
+normalization.
+
+% \begin{table}[h!]
+%   \centering
+%   \begin{tabular}{| c | c | c | c | c |}
+%     \hline
+%     class & $\mathcal{L}^2_{before}$ & $\mathcal{L}^1_{before}$=$\mathcal{L}^2_{after}$ & $\mathcal{L}^1_{after}$ & none \\
+%     \hline
+%     Motorbike & 49.982\% & 49.165\% & 26.805\% & 44.009\% \\
+%     Aeroplane & 56.226\% & 67.637\% & 59.960\% & 56.199\% \\
+%     Person    & 71.164\% & 74.778\% & 59.425\% & 66.431\% \\
+%     \hline
+%   \end{tabular}
+%   \captionof{table}{Effect of the histogram normalization on average precision for each of
+%     the 3 classes with the Hellinger kernel } \label{tab:ap-normalization-hellinger}
+% \end{table}
+
+\begin{table}[h!]
+  \centering
+  \begin{tabular}{| c | c | c | c | c |}
+    \hline
+    class & $\mathcal{L}^1$ & $\mathcal{L}^2$ & none \\
+    \hline
+    Motorbike & \textbf{63.25} & 52.81 & 55.64 \\
+    Aeroplane & \textbf{70.72} & 63.94 & 65.87 \\
+    Person    & \textbf{77.39} & 71.45 & 69.71 \\
+    \hline
+  \end{tabular}
+  \captionof{table}{Effect of the histogram normalization on average precision for each of
+    the 3 classes with the Hellinger kernel } \label{tab:ap-normalization-hellinger}
+\end{table}
+
+We also see that the Hellinger using the $\mathcal{L}^1$ norm yields
+better results than the Linear kernel using the $\mathcal{L}^2$ norm
+for each of the 3 classes. We obtain about $15\%$ increase in average
+precision for the motorbike and the aeroplane, and about $7\%$ for the
+person class, which is a significative improvement. (The
+table~\ref{tab:encodings} present these results as well as the results
+for different encoding, namely VLAD and FV that we try later on)
+
+% \begin{table}[h!]
+%   \centering
+%   \begin{tabular}{| c | c | c | c |}
+%     \hline
+%     Classe & $\mathcal{L}^1$ normalization & $\mathcal{L}^2$ normalization & no normalization \\
+%     \hline
+%     Airplane  & \textbf{67.64\%} & 56.23\% & 56.20\% \\
+%     Motorbike & 49.17\% & \textbf{49.99\%} & 44.01\% \\
+%     Person    & \textbf{74.78\%} & 71.16\% & 66.43\% \\
+%     \hline
+%   \end{tabular}
+%   \captionof{table}{Effect of the histogram normalization on average precision for each of
+%     the 3 classes with the Hellinger kernel (no spatial tiling) } \label{tab:ap-normalization-hellinger}
+% \end{table}
+
+\subsection{Vary the number of training images}
+
+\question{QG1: Report and compare performance you get with the linear
+  kernel and with the Hellinger kernel for the different classes and
+  proportions of training images (10\%, 50\% and 100\%). You don’t
+  have to report the precision-recall curves, just APs are
+  sufficient. Plot three curves (one curve for each
+  class) into one figure. Produce two figures, one for the linear
+  kernel and one for the Hellinger kernel. Make sure to properly label
+  axis (use functions xlabel and ylabel), show each curve in a
+  different color, and have a legend (function legend) in each
+  figure. Show the two figures in your report.}
+
+The table~\ref{tab:ap-ratios} present a comparison of the average
+precision obtained for different values of the ratio of training
+images taken (10\%, 50\%, 100\%) using a linear and a Hellinger kernel.
+
+The average precision increases with the number of training images as
+we can expect, we see that the Hellinger kernel gives overall better
+results, and seems to work better when there the number of training
+images is low.
+
+\begin{table}[h!]
+  \centering
+  \begin{tabular}{| c | c | c | c || c | c | c |}
+    \hline
+    & \multicolumn{3}{c||}{Linear kernel} & \multicolumn{3}{c|}{Hellinger kernel} \\
+    \hline
+    class & $r = 0.1$ & $r = 0.5$ & $r = 1$ & $r = 0.1$ & $r = 0.5$ & $r = 1$ \\
+    \hline
+    motorbike  & 25.23\% & 38.23\% & \textbf{48.66\%} & 36.85\% & 54.74\% & \textbf{63.25\%} \\
+    aeroplane  & 32.77\% & 40.50\% & \textbf{54.95\%} & 54.05\% & 64.44\% & \textbf{70.72\%} \\
+    person     & 59.89\% & 67.23\% & \textbf{70.64\%} & 66.86\% & 73.26\% & \textbf{77.39\%} \\
+    \hline
+  \end{tabular}
+  \captionof{table}{Comparison of the average precision for different
+    values of proportions of training images ($r$) for each of the 3
+    classes for the linear and Hellinger kernel
+  } \label{tab:ap-ratios}
+\end{table}
+
+
+% \begin{table}[h!]
+%   \centering
+%   \begin{tabular}{| c | c | c | c |}
+%     \hline
+%     class & $r = 0.1$ & $r = 0.5$ & $r = 1$ \\
+%     \hline
+%     motorbike  & 25.23\% & 38.23\% & \textbf{48.66\%} \\
+%     aeroplane  & 32.77\% & 40.50\% & \textbf{54.95\%} \\
+%     person     & 59.89\% & 67.23\% & \textbf{70.64\%} \\
+%     \hline
+%   \end{tabular}
+%   \captionof{table}{Average precision for different values of
+%     proportions of training images ($r$) for each of the 3 classes
+%     using a Linear kernel } \label{tab:ap-ratio-linear}
+% \end{table}
+
+% \begin{table}[h!]
+%   \centering
+%   \begin{tabular}{| c | c | c | c |}
+%     \hline
+%     class & $r = 0.1$ & $r = 0.5$ & $r = 1$ \\
+%     \hline
+%     motorbike  & 36.85\% & 54.74\% & \textbf{63.25\%} \\
+%     aeroplane  & 54.05\% & 64.44\% & \textbf{70.72\%} \\
+%     person     & 66.86\% & 73.26\% & \textbf{77.39\%} \\
+%     \hline
+%   \end{tabular}
+%   \captionof{table}{Average precision for different values of
+%     proportions of training images ($r$) for each of the 3 classes
+%     using a Hellinger kernel } \label{tab:ap-ratio-hellinger}
+% \end{table}
+
+The figure~\ref{fig:ap-ratio} presents the variation of the average
+precision as a function of the percentage of training images taken for
+the training part for each of the three classes for both the linear
+(figure~\ref{fig:ap-ratio-linear}) and the Hellinger kernel
+(figure~\ref{fig:ap-ratio-hellinger}).
+
+\doublefig
+{\subfig{ap_ratio_linear}{1.1}{Linear
+    kernel}{fig:ap-ratio-linear}}
+{\subfig{ap_ratio_hellinger}{1.1}{Hellinger
+    kernel}{fig:ap-ratio-hellinger}} {Average precision as a function
+  of the percentage of the training images taken for training for each
+  of the three classes (20 points are represented)}{fig:ap-ratio}
+
+\question{QG2: By analyzing the two figures, do you think the
+  performance has `saturated' if all the training images are used, or
+  would adding more training images give an improvement?}
+
+We see in the curves that the average precision increases with the
+number of training, especially when the number of sample is low
+(between $10\%$ and $70\%$ of the training images taken). When
+approaching a ratio of 1, the curve still seems to increase even if
+it's very slight, hence, I think that adding images could make our
+average precision gain fractions of percents, but it will not make a
+huge improvement (especially for the \emph{person} class which already
+has a large amount of training images).
+
+% Given the curves, I think adding training samples will potentially
+% result in a small gain,
+
+% I don't think reaching
+
+% I dont think the performance is completely \emph{saturated}, at least
+% for the \emph{motorbike} and the \emph{aeroplane}, there is still a
+% gain in taking $100\%$ of the sample versus $90\%$,
+
+% curve seem to
+% still increase even when we take $90\%$ of the training samples,
+% especially for the Hellinger kernel, which is less noisy
+
+
+% The curves of the average precision for the \emph{motorbike} and the
+% \emph{aeroplane} do not seem to be saturated, they are still increasing
+% when we take $90\%$ of the training images
+% when we take $80\%$ of
+% the training sample, their respective values of average precision are
+% $43.92$ and
+
+
+% TODO
+
+\section{Training an Image Classifier for Retrieval using Internet image search}
+
+\question{QP2.1: For the horse class, report the precision at rank-36
+  for 5 and 10 training images. Show the training images you used. Did
+  the performance of the classifier improve when 10 images were used?}
+
+I downloaded $28$ images and trained the classifier $1000$ times over
+5 random images from this set of $28$ images, I obtained the histogram
+presented on figure~\ref{fig:hist-top-5-horses}. I did the same for
+$10$ over $28$ images, the histogram is presented on figure
+\ref{fig:hist-top-10-horses}. The table~\ref{tab:stats-horses} contains
+statistics for both the selection of $5$ training images and $10$
+training images.
+
+\doublefig
+{\subfig{hist_top_5_horses}{1.1}{5 images selected}{fig:hist-top-5-horses}}
+{\subfig{hist_top_10_horses}{1.1}{10 images selected}{fig:hist-top-10-horses}}
+{ Histograms representing the number of good classified images in the
+  top 36 scoring images for sets of training images containing 5 and
+  10 images (on 28 images downloaded)}{fig:hist-top-horses}
+
+\begin{table}[h!]
+  \centering
+  \begin{tabular}{| c | c | c | c | c | c | c |}
+    \hline
+    \begin{tabular}{c}
+      selected images \\
+      (over 28) \\
+    \end{tabular}
+    & $AP_{mean}$ & $AP_{max}$ & $AP_{std}$ & $Top\_36_{mean}$ & $Top\_36_{max}$ & $Top\_36_{std}$\\
+    \hline
+    % 5 & $15.64$\% & $40.54$\% & $5.56$\% & $7.99$ & $24$ & $5.04$ \\
+    5 & $17.04$\% & $45.68$\% & $8.03$\% & $8.54$ & $27$ & $6.95$ \\
+    % 10  & $37.07$\% & $58.12$\% & $8.26$\% & $20.97$ & $32$ & $4.96$ \\
+    % 10  & $35.89$\% & $52.13$\% & $7.39$\% & $20.49$ & $32$ & $4.55$ \\
+    % 10  & $36.60$\% & $51.56$\% & $7.67$\% & $20.84$ & $30$ & $4.71$ \\
+    10  & $36.19$\% & $54.30$\% & $7.50$\% & $20.68$ & $30$ & $4.68$ \\
+    \hline
+  \end{tabular}
+  \captionof{table}{Statistics obtained by the procedure described} \label{tab:stats-horses}
+\end{table}
+
+The 5 training images that produced the highest number of good
+classified images in the top 36 are represented in the
+figure~\ref{fig:horses-5-training} and the top 36 images returned by
+the classifier are shown in figure~\ref{fig:top-horses-5-training}
+. Similarly, the set of 10 training images that produced the best
+result is represented in the figure~\ref{fig:horses-10-training}, and
+the top 36 images in the figure~\ref{fig:top-horses-10-training},
+
+\singlefig{horses_5_training}{0.85}{Set of $5$ training images of
+  horses downloaded on the internet used to train the classifier}{fig:horses-5-training}
+
+\singlefig{top_horses_5_training}{0.85}{top 36 images classified as
+  horses by the classifier trained on a database composed of 5 images
+  downloaded from the internet (represented in
+  fig~\ref{fig:horses-5-training}) $27/36$ are correctly
+  classified}{fig:top-horses-5-training}
+
+\singlefig{horses_10_training}{0.85}{Set of $10$ training images of
+  horses downloaded on the internet used to train the classifier}{fig:horses-10-training}
+
+\singlefig{top_horses_10_training}{0.85}{top 36 images classified as
+  horses by the classifier trained on a database composed of 10 images
+  downloaded from the internet (represented in
+  fig~\ref{fig:horses-10-training}). $30/36$ are correctly
+  classified}{fig:top-horses-10-training}
+
+The performance of the classifier is clearly improved when $10$ images
+are used instead of $5$, the histogram is shifted right, the mean
+precision in the top36 increases from about $8$ (22\%) to $21$ over
+$36$ (58\%) which is very significiant.
+
+\clearpage
+
+\question{QP2.2: What is the best performance (measured by precision
+  at rank-36) you were able to achieve for the horse and the car
+  class? How many training images did you use? For each of the two
+  classes, show examples of your training images, show the top ranked
+  36 images, and report the precision at rank-36. Compare the
+  difficulty of of retrieving horses and cars}
+
+The best performance I've reached for the horse class is $32$ achieved
+with a set of $13$ images, e.g $88.89\%$ precision at
+rank 36 (see figure~\ref{fig:horses-13-training} for the training images
+and figure~\ref{fig:top-horses-13-training} for the top 36
+ranked images)
+
+For the car class, I reached $36$ with $7$ images ($100\%$ precision at
+rank 36). The figure~\ref{fig:cars-7-training} shows the training images and the
+figure~\ref{fig:top-cars-7-training} shows the top 36 ranked images
+from the test dataset.
+
+\singlefig{horses_13_training}{0.80}{Set of $13$ training images of
+  horses used to reach $32$ good classified images in the top 36
+  ranked images (best I could achieve)}{fig:horses-13-training}
+
+\singlefig{top_horses_13_training}{0.80}{top 36 images classified as horses
+  by the classifier trained on a database composed of 7 images
+  downloaded from the internet and background images (false
+  positive)}{fig:top-horses-13-training}
+
+\singlefig{cars_7_training}{0.7}{Set of $7$ training images of cars
+  used to reach $36$ good classified images in the top rank-36}{fig:cars-7-training}
+
+\singlefig{top_cars_7_training}{0.85}{top 36 images classified as cars
+  by the classifier trained on a database composed of 7 images
+  downloaded from the internet and background images (false
+  positive)}{fig:top-cars-7-training}
+
+We can notice that recognizing horses is a lot more difficult than
+recognizing cars, for the car, reaching $100\%$ precision at rank 36
+was actually fairly easy. This can be explained by the fact that there
+is a lot more recognizable detection points on a car than on a horse
+(due to the sharp geometry of the object, the different material used,
+\dots)
+
+\clearpage
+
+\section{Advanced Encoding Methods}
+
+\subsection{First order methods}
+
+\question{QH1: Compare the dimension of VLAD and BoVW vectors for a
+  given value of K. What should be the relation of the K in VLAD to
+  the K in BoVW in order to obtain descriptors of the same dimension?
+  You can ignore tiling.}
+
+The dimension of the VLAD vector is $K N$, K being the size of
+the vocabulary and $N$ the size of a SIFT vector.
+The dimension of a BoVW vector is $K$, with K the size of the
+vocabulary.
+
+For a BoVW vector to have the same dimension as a VLAD vector which
+has a vocabulary of size $K$, we need a vocabulary that is $N$ times
+bigger than the one used for the VLAD vector e.g a vocabulary of size
+$K'$ with $K' = K N$.
+
+\question{QH2: Replace the encoding used in exercise1 with the VLAD
+encoding, and repeat the classification experiments for the three
+classes of Part I (Both linear and Hellinger kernel). How do the
+results compare to the BoVW encoding? Report AP results in a
+table. No need to report all precision-recall curves.}
+
+By looking at the dimensions in MATLAB, we see that the vectors are of
+size $10240$, versus $2048 = 4 \cdot 512$ (512 per tile) for the BoVW
+vectors, assuming there's also tiling, this means that $K = 20$,
+$N = 128$.
+
+% \begin{table}[h!]
+%   \centering
+%   \begin{tabular}{| c | c | c | c |}
+%     \hline
+%     classes & BoVW & VLAD & FV \\
+%     \hline
+%     Motorbike & 48.05\% & \textbf{68.36\%} & 69.17\\
+%     Aeroplane & 54.61\% & \textbf{70.89\%} & 66.75\\
+%     Person    & 70.61\% & \textbf{77.27\%} & 78.62\\
+%     \hline
+%   \end{tabular}
+%   \captionof{table}{Comparison of BoVW and VLAD encoding method for each of
+%     the 3 classes with the linear kernel} \label{tab:encoding-linear}
+% \end{table}
+
+We need to be extra-careful, because a VLAD vector can have negative
+components. To use Hellinger's kernel, we use signed square-rooting
+(for each component we take the square root the absolute value and
+multiply by its sign) this is appropriate because in the
+formula below K is a measurement of similarity, and doing this
+operation ensures that if two multiplied components have the same sign
+(which means that they are similar) $K$ is increased, whereas if they
+have opposite sign (which means they are not similar), $K$ is
+decreased.
+\begin{equation*}
+  K(h, h') = \sum_{i = 1}^d \sqrt{h_i h'_i}
+\end{equation*}
+
+The results of the average precision for each of the three classes
+using the VLAD encoding are represented in the
+table~\ref{tab:encodings}. We can see that the classifier using VLAD
+encoding outperforms the one using BoVW encoding for the two kernel
+used. The increase in average precision is particularly good for the
+motorbike and aeroplane cases (about $20\%$ increase for the linear
+kernel).
+
+\begin{table}[h!]
+  \centering
+  \begin{tabular}{| c | c | c | c || c | c | c |}
+    \hline
+    & \multicolumn{3}{c||}{Linear kernel} & \multicolumn{3}{c|}{Hellinger kernel} \\
+    \hline
+    classes & BoVW & VLAD & FV & BoVW & VLAD & FV \\
+    \hline
+    motorbike  & 48.66\% & 68.82\% & \textbf{72.67\%} & 63.25\% & 75.42\% & \textbf{81.14\%} \\
+    aeroplane  & 54.95\% & \textbf{74.62\%} & 70.64\% & 70.72\% & 75.56\% & \textbf{78.13\%} \\
+    person     & 70.64\% & 75.54\% & \textbf{77.44\%} & 77.39\% & 78.86\% & \textbf{82.11\%} \\
+    \hline
+  \end{tabular}
+  \captionof{table}{Comparison of BoVW and VLAD encoding method for
+    each of the 3 classes with the linear and Hellinger
+    kernel} \label{tab:encodings}
+\end{table}
+
+
+% \begin{table}[h!]
+%   \centering
+%   \begin{tabular}{| c | c | c | c |}
+%     \hline
+%     classes & BoVW & VLAD & FV\\
+%     \hline
+%     Motorbike & 49.17\% & \textbf{70.33\%} & 78.25\\
+%     Aeroplane & 67.64\% & \textbf{70.86\%} & 77.20\\
+%     Person    & 74.78\% & \textbf{76.96\%} & 79.14\\
+%     \hline
+%   \end{tabular}
+%   \captionof{table}{Comparison of BoVW and VLAD encoding method for each of
+%     the 3 classes with the Hellinger kernel} \label{tab:encoding-hellinger}
+% \end{table}
+
+\subsection{Second order methods}
+
+\question{QI1: Replace the encoding used in exercise1 with the FV
+  encoding, and repeat the classification experiments for the three
+  classes of Part I. Report the results in the same table as QH2 so
+  that you can see the performance of the three encoding methods side
+  by side.}
+
+The results are presented in the previous table
+(table~\ref{tab:encodings}) for the linear and the Hellinger kernel
+classifier)
+
+\question{QI2: What are the advantages or disadvantages of FV compared
+  to VLAD in terms of computation time and storage/memory footprint -
+  especially for a large number (hundreds of millions) of images.}
+
+We have seen that a VLAD vector has $K D$ components and that A Fisher
+Vector has $2 K D$ component in the case where only the variance of
+each component is computed. This is actually how it's done in our case
+(only the variance of each component is computed), if we look at the
+amount of spaces taken on disk to store a fisher vector and a vlad
+vector, we see that the fisher vector takes about twice the size of
+the vlad vector (for example \emph{background\_train\_vlad.mat} takes
+38132 Ko and \emph{background\_train\_fv.mat} takes 74384 Ko).
+
+If we would want to compute the covariance matrix entirely, this would
+be $K D + K D^2$. In our case, $D = 128$, if we take $K = 20$, this
+number is already $330240$ components per image, multiplied by
+$100 000 000$ images this is about $132TB$ if we count $4$ bytes per
+components.
+
+If we only store the diagonal, we only have $5120$ components per
+image, which gives $2TB$ of data. VLAD vectors would have given half
+this amount, which is $1TB$ of data.
+
+In the processing part, the VLAD method need to compute the SIFT
+descriptors for each image and run K-means algorithm. For each image
+and for each descriptor, it then needs to compute the sum of
+residual. We then learn a classifier (SVM).
+
+At run time, we need to find the centroid associated to each
+descriptor, using a kd-tree, compute the residual with respect to this
+centroid and account for it to the VLAD vector, once we have done that
+for all descriptors, we can predict using the classifier.
+
+the FV method need to compute the SIFT descriptor for each image, and
+run GMM algorithm. For each image and for each descriptor, it then
+computes the mean of the gaussian kernel with the maximum probability
+(hopefully we can do that efficiently using an accelerating structure
+(some kind of modified kd-tree)). We then need to compute the residual
+and the variance (which we can do in one pass). once we have done that
+for each descriptors, and for each image, we learn a classifier.
+
+At run time, for each descriptor, we need to find the mean of the
+gaussian kernel associated to the maximum probability, compute the
+residual, and the variance (we can do that online), we can then
+predict using the classifier.
+
+We can notice that the GMM clustering is slower than K-means, assuming
+that there is an efficient structure for finding the mean of the
+gaussian kernel associated to the maximum probability, this part is
+slower by only a small amount, and for the FV, we only need to compute
+the variance, which should increase the time by a small amount at run
+time (but this cost can be important in preprocessing as it is multiplied
+by the number of training images).
+
+% \begin{equation*}
+%   \underset{N}{\text{Images}} \xrightarrow{SIFT} \underset{N \times D \times M}{\text{Descriptors}} \xrightarrow{K-means} \underset{K}{\text{Centroids}}
+% \end{equation*}
+
+
+
+\end{document}
