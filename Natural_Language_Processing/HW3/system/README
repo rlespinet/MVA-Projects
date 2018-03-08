@@ -1,0 +1,51 @@
+--------------------------------------------------------------------------------
+-                                    README                                    -
+--------------------------------------------------------------------------------
+
+1. Dependencies
+########################################
+
+This program works with Python 2.7 and uses NLTK for tokenization and
+pos tagging and context2vec as dependencies
+
+
+2. How to use
+########################################
+
+You can either run the program on all the corpus or in interactive
+mode
+
+  2.1 Interactive mode
+  ----------------------------------------
+
+  In interactive mode, you can type text, which is processed and
+  printed as output. You can use this program in interactive mode by
+  running
+
+    python interactive.py <context2vec_param>
+
+  where context2vec_param is the path to the .param file of a pretrained
+  contex2vec model. It has been tested on ukwac, you can download it here
+
+    http://irsrv2.cs.biu.ac.il/downloads/context2vec/context2vec.ukwac.model.package.tar.gz
+
+  example : python interactive.py path/to/context2vec.ukwac.model.params
+
+  2.2 Running on all the corpus
+  ----------------------------------------
+
+  You can also run the program on a whole corpus file by running
+
+    python process_corpus.py <contex2vec_param> <corpus> [N]
+
+  context2vec_param is the path to the .param file of a pretrained
+  contex2vec model as before.
+
+  corpus is the path of the corpus file
+
+  N is the number of line to process (it has been set to reduce the time), it
+  defaults to 1000 but can be set to -1 if you want to process the whole corpus
+  (might take long)
+
+  example: python process_corpus.py path/to/context2vec.ukwac.model.params \
+           path/to/CorpusBataclan_en.1M.raw.txt
