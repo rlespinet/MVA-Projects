@@ -1,0 +1,51 @@
+--------------------------------------------------------------------------------
+-                                    README                                    -
+--------------------------------------------------------------------------------
+
+1. Dependencies
+########################################
+
+For this homework, I've tried to minimize the dependency, the only
+imports used are
+
+ - numpy : to handle multidimensional arrays more easily
+ - math  : for the constant math.inf
+ - re    : for regexp parsing
+
+2. How to use
+########################################
+
+You can either run the program in interactive mode or compute an
+accuracy on a subset of the corpus
+
+  2.1 Interactive mode
+  ----------------------------------------
+
+  In interactive mode, you can type text, which is processed and
+  parsed and output as a ascii tree. You can use this program in
+  interactive mode by running
+
+    python Run.py
+
+  You specify a different corpus as the first argument
+
+    python Run.py <corpus>
+
+  The option --graphviz can be used to output trees in the graphviz
+  format (instead of ASCII), this output can be stored in a file
+  (tree.viz in the example below) and further used to generate a svg,
+  with dot as
+
+    dot tree.viz -Tsvg -o tree.svg
+
+  2.2 Calculating accuracy on the corpus
+  ----------------------------------------
+
+  You can run the program to compute the accuracy on the corpus by running.
+
+    python Run.py --validation
+
+  The program trains on 80% of the sentences, and then predicts a
+  parsing trees for the 20% of the sentences left. It then outputs the
+  obtained accuracy.  The accuracy is calculated as the proportion of
+  parsed trees that match exactly the validation labels.

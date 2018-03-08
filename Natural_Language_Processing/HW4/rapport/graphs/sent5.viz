@@ -1,0 +1,60 @@
+digraph G {
+  subgraph depth_0 {
+    rank = same;
+      N0_0 [label="SENT"];
+  }
+  subgraph depth_1 {
+    rank = same;
+      N1_0 [label="VN"];
+      N1_1 [label="ADV"];
+      N1_2 [label="COORD"];
+      N1_3 [label="PONCT"];
+  }
+  subgraph depth_2 {
+    rank = same;
+      N2_0 [label="CLS"];
+      N2_1 [label="CLO"];
+      N2_2 [label="V"];
+      N2_4 [label="PONCT"];
+      N2_5 [label="NP"];
+  }
+  subgraph depth_3 {
+    rank = same;
+      N3_4 [label="NPP"];
+      N3_5 [label="NPP"];
+  }
+  subgraph depth_4 {
+    rank = same;
+  }
+  subgraph leafs {
+    node [style=filled shape="box" color="#090030" fontcolor="#ffffff"];
+    rank = same;
+      N2_3 [label="Bond"];
+      N2_6 [label="."];
+      N3_0 [label="Je"];
+      N3_1 [label="m'"];
+      N3_2 [label="appelle"];
+      N3_3 [label=","];
+      N4_0 [label="James"];
+      N4_1 [label="Bond"];
+  }
+  N0_0 -> N1_0
+  N0_0 -> N1_1
+  N0_0 -> N1_2
+  N0_0 -> N1_3
+  N1_0 -> N2_0
+  N1_0 -> N2_1
+  N1_0 -> N2_2
+  N1_1 -> N2_3
+  N1_2 -> N2_4
+  N1_2 -> N2_5
+  N1_3 -> N2_6
+  N2_0 -> N3_0
+  N2_1 -> N3_1
+  N2_2 -> N3_2
+  N2_4 -> N3_3
+  N2_5 -> N3_4
+  N2_5 -> N3_5
+  N3_4 -> N4_0
+  N3_5 -> N4_1
+}

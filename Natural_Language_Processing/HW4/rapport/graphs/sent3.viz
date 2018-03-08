@@ -1,0 +1,76 @@
+digraph G {
+  subgraph depth_0 {
+    rank = same;
+      N0_0 [label="SENT"];
+  }
+  subgraph depth_1 {
+    rank = same;
+      N1_0 [label="VN"];
+      N1_1 [label="NP"];
+      N1_2 [label="COORD"];
+      N1_3 [label="PONCT"];
+  }
+  subgraph depth_2 {
+    rank = same;
+      N2_0 [label="CLS"];
+      N2_1 [label="V"];
+      N2_2 [label="VPP"];
+      N2_3 [label="DET"];
+      N2_4 [label="NC"];
+      N2_5 [label="CC"];
+      N2_6 [label="VN"];
+      N2_7 [label="ADV"];
+      N2_8 [label="AP"];
+  }
+  subgraph depth_3 {
+    rank = same;
+      N3_6 [label="CLS"];
+      N3_7 [label="V"];
+      N3_9 [label="ADJ"];
+  }
+  subgraph depth_4 {
+    rank = same;
+  }
+  subgraph leafs {
+    node [style=filled shape="box" color="#090030" fontcolor="#ffffff"];
+    rank = same;
+      N2_9 [label="!"];
+      N3_0 [label="J'"];
+      N3_1 [label="ai"];
+      N3_2 [label="relâché"];
+      N3_3 [label="mon"];
+      N3_4 [label="carapuce"];
+      N3_5 [label="car"];
+      N3_8 [label="trop"];
+      N4_0 [label="il"];
+      N4_1 [label="était"];
+      N4_2 [label="nul"];
+  }
+  N0_0 -> N1_0
+  N0_0 -> N1_1
+  N0_0 -> N1_2
+  N0_0 -> N1_3
+  N1_0 -> N2_0
+  N1_0 -> N2_1
+  N1_0 -> N2_2
+  N1_1 -> N2_3
+  N1_1 -> N2_4
+  N1_2 -> N2_5
+  N1_2 -> N2_6
+  N1_2 -> N2_7
+  N1_2 -> N2_8
+  N1_3 -> N2_9
+  N2_0 -> N3_0
+  N2_1 -> N3_1
+  N2_2 -> N3_2
+  N2_3 -> N3_3
+  N2_4 -> N3_4
+  N2_5 -> N3_5
+  N2_6 -> N3_6
+  N2_6 -> N3_7
+  N2_7 -> N3_8
+  N2_8 -> N3_9
+  N3_6 -> N4_0
+  N3_7 -> N4_1
+  N3_9 -> N4_2
+}

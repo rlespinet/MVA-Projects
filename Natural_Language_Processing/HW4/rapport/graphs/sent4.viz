@@ -1,0 +1,74 @@
+digraph G {
+  subgraph depth_0 {
+    rank = same;
+      N0_0 [label="SENT"];
+  }
+  subgraph depth_1 {
+    rank = same;
+      N1_0 [label="VN"];
+      N1_1 [label="PP"];
+      N1_2 [label="Ssub"];
+      N1_3 [label="PONCT"];
+  }
+  subgraph depth_2 {
+    rank = same;
+      N2_0 [label="CLS"];
+      N2_1 [label="V"];
+      N2_2 [label="P"];
+      N2_3 [label="NP"];
+      N2_4 [label="CS"];
+      N2_5 [label="VN"];
+      N2_6 [label="NP"];
+  }
+  subgraph depth_3 {
+    rank = same;
+      N3_3 [label="PRO"];
+      N3_5 [label="CLS"];
+      N3_6 [label="V"];
+      N3_7 [label="DET"];
+      N3_8 [label="NC"];
+  }
+  subgraph depth_4 {
+    rank = same;
+  }
+  subgraph leafs {
+    node [style=filled shape="box" color="#090030" fontcolor="#ffffff"];
+    rank = same;
+      N2_7 [label="!"];
+      N3_0 [label="C'"];
+      N3_1 [label="est"];
+      N3_2 [label="comme"];
+      N3_4 [label="qu'"];
+      N4_0 [label="ça"];
+      N4_1 [label="il"];
+      N4_2 [label="a"];
+      N4_3 [label="battu"];
+      N4_4 [label="Freezer"];
+  }
+  N0_0 -> N1_0
+  N0_0 -> N1_1
+  N0_0 -> N1_2
+  N0_0 -> N1_3
+  N1_0 -> N2_0
+  N1_0 -> N2_1
+  N1_1 -> N2_2
+  N1_1 -> N2_3
+  N1_2 -> N2_4
+  N1_2 -> N2_5
+  N1_2 -> N2_6
+  N1_3 -> N2_7
+  N2_0 -> N3_0
+  N2_1 -> N3_1
+  N2_2 -> N3_2
+  N2_3 -> N3_3
+  N2_4 -> N3_4
+  N2_5 -> N3_5
+  N2_5 -> N3_6
+  N2_6 -> N3_7
+  N2_6 -> N3_8
+  N3_3 -> N4_0
+  N3_5 -> N4_1
+  N3_6 -> N4_2
+  N3_7 -> N4_3
+  N3_8 -> N4_4
+}

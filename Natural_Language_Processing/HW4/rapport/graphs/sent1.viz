@@ -1,0 +1,57 @@
+digraph G {
+  subgraph depth_0 {
+    rank = same;
+      N0_0 [label="SENT"];
+  }
+  subgraph depth_1 {
+    rank = same;
+      N1_0 [label="ADV"];
+      N1_1 [label="PONCT"];
+      N1_2 [label="NP"];
+      N1_3 [label="VN"];
+      N1_4 [label="AP"];
+      N1_5 [label="PONCT"];
+  }
+  subgraph depth_2 {
+    rank = same;
+      N2_2 [label="DET"];
+      N2_3 [label="NC"];
+      N2_4 [label="V"];
+      N2_5 [label="ADV"];
+      N2_6 [label="ADJ"];
+  }
+  subgraph depth_3 {
+    rank = same;
+  }
+  subgraph leafs {
+    node [style=filled shape="box" color="#090030" fontcolor="#ffffff"];
+    rank = same;
+      N2_0 [label="En_fait"];
+      N2_1 [label=","];
+      N2_7 [label="."];
+      N3_0 [label="ce"];
+      N3_1 [label="témoignage"];
+      N3_2 [label="était"];
+      N3_3 [label="entièrement"];
+      N3_4 [label="faux"];
+  }
+  N0_0 -> N1_0
+  N0_0 -> N1_1
+  N0_0 -> N1_2
+  N0_0 -> N1_3
+  N0_0 -> N1_4
+  N0_0 -> N1_5
+  N1_0 -> N2_0
+  N1_1 -> N2_1
+  N1_2 -> N2_2
+  N1_2 -> N2_3
+  N1_3 -> N2_4
+  N1_4 -> N2_5
+  N1_4 -> N2_6
+  N1_5 -> N2_7
+  N2_2 -> N3_0
+  N2_3 -> N3_1
+  N2_4 -> N3_2
+  N2_5 -> N3_3
+  N2_6 -> N3_4
+}
